@@ -14,3 +14,5 @@ export default new Phaser.Class({
         this.add.image(0, 0, 'tex', 'logo')
     },
 })
+
+

@@ -16,3 +16,5 @@ export function show_all(game) {
 export function resize(game) {
     game.resize(window.innerWidth, window.innerHeight)
 }
+
+

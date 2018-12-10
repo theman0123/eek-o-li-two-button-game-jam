@@ -1,23 +1,19 @@
-import 'phaser'
+import 'phaser';
+import config from './config';
+import GameScene from './Scenes/Game';
+import BootScene from './Scenes/Boot';
 
-import { show_all as scale_mode } from './game_scales'
+class Game extends Phaser.Game {
+  constructor () {
+    super(config);
+    this.scene.add('Boot', BootScene);
+    this.scene.add('Game', GameScene);
 
-import Preloader from './Preloader'
-import GamePlay from './GamePlay'
+    this.scene.start('Boot');
+  };
+};
 
-
-var game = new Phaser.Game({
-    type: Phaser.AUTO,
-    canvas: document.getElementById('game'),
-    width: 400,
-    height: 640,
-    scene: [
-        Preloader('GamePlay'),
-        GamePlay,
-    ],
-})
-
-
-function on_window_resize() { scale_mode(game) }
-window.addEventListener('load', on_window_resize, false)
-window.addEventListener('resize', on_window_resize, false)
+window.game = new Game();
+window.addEventListener('resize', (event) => {
+  window.game.resize(window.innerWidth, window.innerHeight);
+});
