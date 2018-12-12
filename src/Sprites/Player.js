@@ -33,18 +33,20 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             });
         });
         // move event
-        this.scene.events.on("moveEek", scene => {
+        this.scene.events.on("moveEek", (player, scene) => {
             scene.time.removeAllEvents();
             this.move = true;
-            this.moveEek(scene);
+            this.moveEek(player, scene);
+            scene.events.emit("playerPosition", player, scene);
         });
         // alert movement of player
-        this.scene.time.addEvent({
-            delay: 2000,
-            callback: this.alertPlayerPosition,
-            callbackScope: this,
-            repeat: -1,
-        });
+
+        // this.timedPlayerAlert = this.scene.time.addEvent({
+        //     delay: 3500,
+        //     callback: this.alertPlayerPosition,
+        //     callbackScope: this,
+        //     repeat: -1,
+        // });
     }
 
     tumble() {
@@ -52,7 +54,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     // move eek
-    moveEek(scene) {
+    moveEek(player, scene) {
+        console.log(player.body.speed);
         scene.player.anims.stop("tumble");
         scene.player.anims.play("engage", false);
         scene.player.thrust(0.125);
@@ -60,9 +63,12 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     alertPlayerPosition() {
+        console.log("PLAYER ALERTING POSITION", this.body.speed);
+        // check speed and change anims if slow enough
+
         this.scene.events.emit("playerPosition", {
-            x: this.x,
-            y: this.y,
+            player: { x: this.x, y: this.y },
+            scene: this.scene,
         });
     }
 }
