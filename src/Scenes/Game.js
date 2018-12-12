@@ -42,48 +42,81 @@ export default class BootScene extends Phaser.Scene {
             objectA: this.player,
             objectB: this.enemy,
             callback: () => {
-                this.time.addEvent({
-                    delay: 1000,
-                    callback: this.lose(),
-                    callbackScope: this,
-                    repeat: -1,
-                });
+                this.lose(this.enemy, this.player);
+                // this.time.addEvent({
+                //     delay: 1000,
+                //     callback: () => this.lose(this.enemy, this.player),
+                //     callbackScope: this.scene,
+                // });
             },
         });
         // power-up
-        this.matterCollision.addOnCollideStart({
-            objectA: this.player,
-            objectB: this.powerup,
-            callback: () => {
-                this.time.addEvent({
-                    delay: 1000,
-                    callback: this.powerup.activatePowerUp(
-                        this.player,
-                        this.powerup,
-                        this,
-                    ), // be sure you get correct one after changing to a group
-                    callbackScope: this.scene,
-                    repeat: -1,
-                });
-            },
-        });
+        // this.matterCollision.addOnCollideStart({
+        //     objectA: this.player,
+        //     objectB: this.powerup,
+        //     callback: () => {
+        //         this.time.addEvent({
+        //             delay: 1000,
+        //             callback: this.powerup.activatePowerUp(
+        //                 this.player,
+        //                 this.powerup,
+        //                 this,
+        //             ), // be sure you get correct one after changing to a group
+        //             callbackScope: this.scene,
+        //             repeat: -1,
+        //         });
+        //     },
+        // });
     }
 
     create() {
-        this.matter.world.setBounds(0, 0, 1800, 1800, 15);
-
+        this.matter.world.setBounds(0, 0, 1800, 1800, 115);
+        // enable attractor plugin for lose frames
+        // this.matter.use(MatterAttractors);
+        // this.matter.system.enableAttractorPlugin();
         // listen for resize events
         this.events.on("resize", this.resize, this);
 
         // create Player
-        this.player = new Player(this.matter.world, this, 300, 200);
+        this.player = new Player(this.matter.world, this, 300, 350, {
+            plugin: {
+                attractors: [
+                    function(bodyA, bodyB) {
+                        return {
+                            x: (bodyA.position.x - bodyB.position.x) * 0.000001,
+                            y: (bodyA.position.y - bodyB.position.y) * 0.000001,
+                        };
+                    },
+                ],
+            },
+        });
         this.player.anims.play("tumble");
+        this.test = this.matter.add.image(400, 800, "gate", null, {
+            shape: {
+                type: "circle",
+                radius: 64,
+            },
+            plugin: {
+                attractors: [
+                    function(bodyA, bodyB) {
+                        return {
+                            x: (bodyA.position.x - bodyB.position.x) * 1e-6,
+                            y: (bodyA.position.y - bodyB.position.y) * 1e-6,
+                        };
+                    },
+                ],
+            },
+        });
+        this.matter.add.mouseSpring();
 
+        console.log(this, this.plugins, this.plugins.scenePlugins);
         // player movement and related listeners
+        // click or touch for tumble
         this.input.on("pointerdown", () => {
             this.player.move = false;
             this.events.emit("beginTumble", this);
         });
+        // release touch or click for thrust
         this.input.on("pointerup", () => {
             this.player.move = true;
             this.events.emit("moveEek", this.player, this);
@@ -91,7 +124,7 @@ export default class BootScene extends Phaser.Scene {
 
         // enemy
 
-        this.enemy = new Enemy(this.matter.world, this, 550, 350, {
+        this.enemy = new Enemy(this.matter.world, this, 350, 450, {
             x: this.player.x,
             y: this.player.y,
         });
@@ -102,7 +135,7 @@ export default class BootScene extends Phaser.Scene {
         this.gate.anims.play("flash");
 
         // create power-ups group
-        this.powerup = new PowerUp(this.matter.world, this, 250, 300);
+        // this.powerup = new PowerUp(this.matter.world, this, 250, 300);
         // this.powerUpsGroup = new PowerUps(
         //     this.physics.world,
         //     this,
@@ -115,8 +148,10 @@ export default class BootScene extends Phaser.Scene {
         this.addCollisions();
     }
 
-    lose() {
-        console.log("you lost");
+    lose(enemy, player) {
+        player.setVisible(false);
+        this.cameras.main.startFollow(enemy);
+        enemy.anims.play("eek-lose");
     }
 
     resize(width, height) {
@@ -130,10 +165,11 @@ export default class BootScene extends Phaser.Scene {
     }
 
     restart() {
+        this.cameras.main.startFollow(this.gate);
         this.gate.anims.stop("flash");
         this.player.setVisible(false);
         this.gate.anims.play("levelWin");
-        this.cameras.main.fade(800, 0, 0, 0);
+        this.cameras.main.fade(1500, 0, 0, 0);
         this.cameras.main.on("camerafadeoutcomplete", () => {
             this.scene.restart(this.info);
         });

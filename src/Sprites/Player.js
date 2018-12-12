@@ -9,20 +9,21 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
         //  add our player to the scene
         this.scene.add.existing(this);
-
+        // console.log(this.scene.matter, this, this.plugin);
         //  scale player
         this.setScale(4);
         //  set depth
         this.depth = 1;
         // change hit box size
         this.setBody({ type: "rectangle", width: 30, height: 60 });
+        // modify mass: lower number adds velocity
+        this.setMass(5);
         // setOrigin is an x, y axis where 1, 1 is top and left and 0, 0 is bottom right
         this.setOrigin(0.5, 0.65);
 
         // tumble event
         this.scene.events.on("beginTumble", scene => {
-            scene.player.anims.stop("engage");
-            scene.player.anims.play("tumble", false);
+            scene.player.handleAnims(scene);
             scene.time.addEvent({
                 delay: 150,
                 callback: this.tumble,
@@ -38,8 +39,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             scene.events.emit("playerPosition", player, scene);
         });
 
-        this.scene.events.on("killSpeedTracker", () => {
-            this.speedTracker.remove();
+        this.scene.events.on("killSpeedTracker", player => {
+            player.speedTracker.remove();
         });
     }
     alertPlayerPosition() {
@@ -53,6 +54,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     moveEek(player, scene) {
         // handle animation
         player.handleAnims(scene);
+        // handle body physics
+        player.setFriction(0, 0);
         // give thrust/speed
         scene.player.thrust(0.125);
         scene.player.thrustLeft(0.123);
@@ -62,7 +65,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             callback: () => {
                 if (player.body.speed <= 1) {
                     player.move = false;
-                    scene.events.emit("killSpeedTracker");
+                    scene.events.emit("killSpeedTracker", player);
                     player.handleAnims(scene);
                 }
             },
@@ -71,9 +74,12 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         });
     }
 
-    handleAnims(scene) {
+    handleAnims(scene, desiredAnims) {
+        // not working correctly animations messed up
+        const { currentAnim, isPlaying } = scene.player.anims;
+        console.log(currentAnim.key, isPlaying, scene.player.anims);
         // check for current texture-- switch animation
-        if (scene.player.anims.currentFrame.textureKey === "eek") {
+        if (!scene.player.move) {
             scene.player.anims.stop("engage", false);
             scene.player.anims.play("tumble");
         } else {
@@ -81,8 +87,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             scene.player.anims.play("engage", false);
         }
     }
-
+    // handle body to create tumble physics
     tumble() {
+        this.setFriction(10, 0.2);
         !this.move ? this.setAngle(this.angle + castDie(90, -90)) : null;
     }
 }
