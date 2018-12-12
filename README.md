@@ -1,3 +1,12 @@
+# notes on phaser
+
+#notes on tweens
+
+-   must have correct context (scene)
+-   helpful to pass scene with events emitters
+-   check if tween already exist and use if they do
+-   stop all tweens and timed events when game objects are destroyed
+
 # to be removed
 
 -   preloader

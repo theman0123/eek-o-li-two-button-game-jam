@@ -16,7 +16,7 @@ export default class BootScene extends Phaser.Scene {
         // const { level, powerUps } = this.info;
         // bad logic
         this.info.level === 0 ? this.info.level++ : this.info.level++;
-        console.log(this.info);
+        // console.log(this.info);
     }
 
     preload() {}
@@ -24,6 +24,7 @@ export default class BootScene extends Phaser.Scene {
     // ALPHABETICAL BY METHOD
 
     addCollisions() {
+        // level win
         this.matterCollision.addOnCollideStart({
             objectA: this.player,
             objectB: this.gate,
@@ -36,6 +37,7 @@ export default class BootScene extends Phaser.Scene {
                 });
             },
         });
+        // level lose
         this.matterCollision.addOnCollideStart({
             objectA: this.player,
             objectB: this.enemy,
@@ -48,14 +50,33 @@ export default class BootScene extends Phaser.Scene {
                 });
             },
         });
+        // power-up
+        this.matterCollision.addOnCollideStart({
+            objectA: this.player,
+            objectB: this.powerup,
+            callback: () => {
+                this.time.addEvent({
+                    delay: 1000,
+                    callback: this.powerup.activatePowerUp(
+                        this.player,
+                        this.powerup,
+                        this,
+                    ), // be sure you get correct one after changing to a group
+                    callbackScope: this.scene,
+                    repeat: -1,
+                });
+            },
+        });
     }
 
     create() {
+        this.matter.world.setBounds(0, 0, 1800, 1800, 15);
+
         // listen for resize events
         this.events.on("resize", this.resize, this);
 
         // create Player
-        this.player = new Player(this.matter.world, this, 300, 300);
+        this.player = new Player(this.matter.world, this, 300, 200);
         this.player.anims.play("tumble");
 
         // player movement and related listeners
@@ -65,30 +86,23 @@ export default class BootScene extends Phaser.Scene {
         });
         this.input.on("pointerup", () => {
             this.player.move = true;
-            this.events.emit("moveEek", this);
+            this.events.emit("moveEek", this.player, this);
         });
 
         // enemy
 
-        this.enemy = new Enemy(this.matter.world, this, 50, 50, {
+        this.enemy = new Enemy(this.matter.world, this, 550, 350, {
             x: this.player.x,
             y: this.player.y,
         });
         this.enemy.anims.play("move-enemy");
 
-        // create coins
-        // args -> #object_layer_from_tiled, #object, config_object
-        // this.coins = this.map.createFromObjects('Coins', 'Coin', { key: 'coin' });
-        // this.coinsGroup = new Coins(this.physics.world, this, [], this.coins);
-        // this.player = this.matter.add.sprite(300, 500, "eek").setOrigin(0, 0);
         // gate
         this.gate = new Gate(this.matter.world, 300, 100, "gate"); //this.matter.add.sprite(300, 100, "gate");
         this.gate.anims.play("flash");
 
-        // console.log(this.gate.setBody);
-        // debugger;
-
         // create power-ups group
+        this.powerup = new PowerUp(this.matter.world, this, 250, 300);
         // this.powerUpsGroup = new PowerUps(
         //     this.physics.world,
         //     this,

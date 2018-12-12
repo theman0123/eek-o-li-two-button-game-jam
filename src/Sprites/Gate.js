@@ -10,6 +10,5 @@ export default class Gate extends Phaser.Physics.Matter.Sprite {
         this.setScale(5);
         // change body shape
         this.setBody({ shape: "circle" });
-        console.log(this);
     }
 }
