@@ -11,6 +11,10 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 32,
         });
+        this.load.spritesheet("eek-tumble", "assets/tex/eek-tumble.png", {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
         this.load.spritesheet("gate", "assets/tex/gate.png", {
             frameWidth: 32,
             frameHeight: 32,
@@ -32,6 +36,16 @@ export default class BootScene extends Phaser.Scene {
             key: "engage",
             frames: this.anims.generateFrameNames("eek", {
                 frames: [0, 1, 2, 3, 4, 5, 6, 7],
+            }),
+            frameRate: 8,
+            yoyo: true,
+            repeat: -1,
+        });
+        // eek tumble movement
+        this.anims.create({
+            key: "tumble",
+            frames: this.anims.generateFrameNames("eek-tumble", {
+                frames: [0, 1, 2],
             }),
             frameRate: 8,
             yoyo: true,
@@ -60,7 +74,25 @@ export default class BootScene extends Phaser.Scene {
             repeat: -1,
         });
 
+        // eek through gate: level win
+        this.anims.create({
+            key: "levelWin",
+            frames: this.anims.generateFrameNames("gate", {
+                frames: [4, 5, 6, 7],
+            }),
+            frameRate: 4,
+            yoyo: false,
+            repeat: -1,
+        });
+
         // start game
-        this.scene.start("Game");
+        this.scene.start("Game", {
+            level: 0,
+            powerUps: {
+                max: 3,
+                distanceFromPlayer: 200,
+                setScale: 4,
+            },
+        });
     }
 }
