@@ -21,14 +21,12 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
         // tumble event
         this.scene.events.on("beginTumble", scene => {
-            // on restarts this.scene = 'undefined'
-            console.log("this.world.scene.player", scene);
             scene.player.anims.stop("engage");
             scene.player.anims.play("tumble", false);
             scene.time.addEvent({
                 delay: 150,
                 callback: this.tumble,
-                callbackScope: this,
+                callbackScope: scene.player,
                 repeat: -1,
             });
         });
@@ -38,6 +36,10 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             this.move = true;
             this.moveEek(player, scene);
             scene.events.emit("playerPosition", player, scene);
+        });
+
+        this.scene.events.on("killSpeedTracker", () => {
+            this.speedTracker.remove();
         });
         // alert movement of player
 
@@ -55,17 +57,26 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
     // move eek
     moveEek(player, scene) {
-        console.log(player.body.speed);
         scene.player.anims.stop("tumble");
         scene.player.anims.play("engage", false);
         scene.player.thrust(0.125);
         scene.player.thrustLeft(0.123);
+        player.speedTracker = scene.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                if (player.body.speed <= 1) {
+                    player.move = false;
+                    player.anims.stop("engage", false);
+                    player.anims.play("tumble");
+                    scene.events.emit("killSpeedTracker");
+                }
+            },
+            callbackScope: scene,
+            repeat: -1,
+        });
     }
 
     alertPlayerPosition() {
-        console.log("PLAYER ALERTING POSITION", this.body.speed);
-        // check speed and change anims if slow enough
-
         this.scene.events.emit("playerPosition", {
             player: { x: this.x, y: this.y },
             scene: this.scene,
