@@ -41,34 +41,29 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.scene.events.on("killSpeedTracker", () => {
             this.speedTracker.remove();
         });
-        // alert movement of player
-
-        // this.timedPlayerAlert = this.scene.time.addEvent({
-        //     delay: 3500,
-        //     callback: this.alertPlayerPosition,
-        //     callbackScope: this,
-        //     repeat: -1,
-        // });
     }
-
-    tumble() {
-        !this.move ? this.setAngle(this.angle + castDie(90, -90)) : null;
+    alertPlayerPosition() {
+        this.scene.events.emit("playerPosition", {
+            player: { x: this.x, y: this.y },
+            scene: this.scene,
+        });
     }
 
     // move eek
     moveEek(player, scene) {
-        scene.player.anims.stop("tumble");
-        scene.player.anims.play("engage", false);
+        // handle animation
+        player.handleAnims(scene);
+        // give thrust/speed
         scene.player.thrust(0.125);
         scene.player.thrustLeft(0.123);
+        // check speed for when eek slows to a crawl
         player.speedTracker = scene.time.addEvent({
             delay: 1000,
             callback: () => {
                 if (player.body.speed <= 1) {
                     player.move = false;
-                    player.anims.stop("engage", false);
-                    player.anims.play("tumble");
                     scene.events.emit("killSpeedTracker");
+                    player.handleAnims(scene);
                 }
             },
             callbackScope: scene,
@@ -76,10 +71,18 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         });
     }
 
-    alertPlayerPosition() {
-        this.scene.events.emit("playerPosition", {
-            player: { x: this.x, y: this.y },
-            scene: this.scene,
-        });
+    handleAnims(scene) {
+        // check for current texture-- switch animation
+        if (scene.player.anims.currentFrame.textureKey === "eek") {
+            scene.player.anims.stop("engage", false);
+            scene.player.anims.play("tumble");
+        } else {
+            scene.player.anims.stop("tumble");
+            scene.player.anims.play("engage", false);
+        }
+    }
+
+    tumble() {
+        !this.move ? this.setAngle(this.angle + castDie(90, -90)) : null;
     }
 }
