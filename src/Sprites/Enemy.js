@@ -8,6 +8,8 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
 
         // add our enemy to the scene
         this.scene.add.existing(this);
+        // fix bounding box
+        this.setBody({ shape: "square", width: 10, height: 10 });
 
         // scale enemy
         this.setScale(4);

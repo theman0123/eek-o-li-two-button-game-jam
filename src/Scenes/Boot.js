@@ -82,7 +82,16 @@ export default class BootScene extends Phaser.Scene {
             }),
             frameRate: 4,
             yoyo: false,
-            repeat: -1,
+        });
+
+        // enemy win - eek/player lose
+        this.anims.create({
+            key: "eek-lose",
+            frames: this.anims.generateFrameNames("enemy", {
+                frames: [2, 3, 4, 5, 0],
+            }),
+            frameRate: 4,
+            yoyo: false,
         });
 
         // start game
