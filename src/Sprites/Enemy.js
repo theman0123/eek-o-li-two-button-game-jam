@@ -22,32 +22,44 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
         //     "THIS.SCENE",
         //     this.scene,
         // );
+        // emit event on enemy movement
+        // debugger;
+        this.emitMovementTimer = this.scene.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                this.scene.events.emit("enemyMovement", this.scene, this),
+                    console.log("enemy movement in enemy emitted");
+            },
+            repeat: -1,
+        });
+        console.log(this);
 
-        this.scene.events.on("playerPosition", (player, scene) => {
-            this.honeTween(player, scene);
-        });
-        this.scene.events.on("powerupActivated", playerPosition => {
-            // console.log(
-            //     "powerup activated enemy",
-            //     playerPosition,
-            //     this.scene.tweens,
-            // );
-            // distance between enemy and player
-            let totalX = playerPosition.x - this.x;
-            // console.log("totalX", totalX, playerPosition.x, this.scene.enemy.x);
-            this.move = this.scene.tweens.add({
-                targets: this.scene.enemy,
-                x: 155,
-                y: 155,
-                duration: 3500,
-                paused: true,
-                ease: "Sine.easeInOut",
-                // getEndValue: enemy => {
-                //     this.scene.tweens.hone.restart();
-                // },
-            });
-            this.move.restart();
-        });
+        // this.scene.events.on("playerPosition", (player, scene) => {
+        //     console.log("player position in ENEMY");
+        //     // this.honeTween(player, scene);
+        // });
+        // this.scene.events.on("powerupActivated", playerPosition => {
+        // console.log(
+        //     "powerup activated enemy",
+        //     playerPosition,
+        //     this.scene.tweens,
+        // );
+        // distance between enemy and player
+        // let totalX = playerPosition.x - this.x;
+        // console.log("totalX", totalX, playerPosition.x, this.scene.enemy.x);
+        //     this.move = this.scene.tweens.add({
+        //         targets: this.scene.enemy,
+        //         x: 155,
+        //         y: 155,
+        //         duration: 3500,
+        //         paused: true,
+        //         ease: "Sine.easeInOut",
+        //         // getEndValue: enemy => {
+        //         //     this.scene.tweens.hone.restart();
+        //         // },
+        //     });
+        //     this.move.restart();
+        // });
     }
 
     honeTween(player, scene) {

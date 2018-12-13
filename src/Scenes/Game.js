@@ -5,6 +5,7 @@ import Enemy from "../Sprites/Enemy";
 import Enemies from "../Groups/Enemies";
 import PowerUps from "../Groups/PowerUps";
 import PowerUp from "../Sprites/PowerUp";
+// import { MatterAttractors } from "matter-attractors";
 
 export default class BootScene extends Phaser.Scene {
     constructor(key) {
@@ -17,6 +18,7 @@ export default class BootScene extends Phaser.Scene {
         // bad logic
         this.info.level === 0 ? this.info.level++ : this.info.level++;
         // console.log(this.info);
+        this.events.emit("info", this.info);
     }
 
     preload() {}
@@ -72,6 +74,12 @@ export default class BootScene extends Phaser.Scene {
     create() {
         this.matter.world.setBounds(0, 0, 1800, 1800, 115);
         // enable attractor plugin for lose frames
+        // this.plugins.installScenePlugin(
+        //     "matterAttractorsPlugin",
+        //     MatterAttractors,
+        //     "matterAttractors",
+        // );
+
         // this.matter.use(MatterAttractors);
         // this.matter.system.enableAttractorPlugin();
         // listen for resize events
@@ -131,7 +139,7 @@ export default class BootScene extends Phaser.Scene {
         this.enemy.anims.play("move-enemy");
 
         // gate
-        this.gate = new Gate(this.matter.world, 300, 100, "gate"); //this.matter.add.sprite(300, 100, "gate");
+        this.gate = new Gate(this.matter.world, 300, 100, "gate");
         this.gate.anims.play("flash");
 
         // create power-ups group

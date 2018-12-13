@@ -36,17 +36,11 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             scene.time.removeAllEvents();
             this.move = true;
             this.moveEek(player, scene);
-            scene.events.emit("playerPosition", player, scene);
+            scene.events.emit("playerPosition", scene, player);
         });
 
         this.scene.events.on("killSpeedTracker", player => {
             player.speedTracker.remove();
-        });
-    }
-    alertPlayerPosition() {
-        this.scene.events.emit("playerPosition", {
-            player: { x: this.x, y: this.y },
-            scene: this.scene,
         });
     }
 

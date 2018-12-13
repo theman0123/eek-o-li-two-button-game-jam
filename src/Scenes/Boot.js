@@ -23,6 +23,10 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 32,
         });
+        this.load.spritesheet("HUD", "assets/tex/HUD.png", {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
         this.load.image("power-up", "assets/tex/power-up.png");
     }
 
@@ -94,6 +98,15 @@ export default class BootScene extends Phaser.Scene {
             yoyo: false,
         });
 
+        // HUD
+        this.anims.create({
+            key: "HUD",
+            frames: this.anims.generateFrameNames("HUD", {
+                frames: [4, 5, 6],
+            }),
+            frameRate: 4,
+            yoyo: false,
+        });
         // start game
         this.scene.start("Game", {
             level: 0,
