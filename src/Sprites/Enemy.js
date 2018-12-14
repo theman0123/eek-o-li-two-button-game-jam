@@ -27,15 +27,12 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
             (scene, player) => {
                 this.calculateMovement(scene, player);
                 this.executeMovement(scene);
-                console.log("enemies on the move");
             },
             this,
         );
     }
     // to make it work on restart : this
     calculateMovement(scene, player) {
-        // console.log(enemy, scene);
-        console.log(this);
         let distance = Phaser.Math.Distance.Between(
             player.x,
             player.y,
@@ -55,19 +52,15 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
         if (this.directionToPlayer.up === true) {
             if (this.directionToPlayer.left === true) {
                 this.setVelocity(-2.2);
-                console.log("up and left");
             } else {
                 this.setVelocity(2.2, -2.2);
-                console.log("up and right");
             }
         }
         if (this.directionToPlayer.down === true) {
             if (this.directionToPlayer.left === true) {
                 this.setVelocity(-2.2, 2.2);
-                console.log("down and left");
             } else {
                 this.setVelocity(2.2);
-                console.log("down and right");
             }
         }
     }

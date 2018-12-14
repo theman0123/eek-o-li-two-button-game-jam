@@ -117,6 +117,7 @@ export default class BootScene extends Phaser.Scene {
             },
             enemies: {
                 num: 3,
+                startDistance: 500,
             },
         });
     }

@@ -41,12 +41,14 @@ export default class GameScene extends Phaser.Scene {
                 });
             },
         });
+
         // level lose
         this.matterCollision.addOnCollideStart({
             objectA: this.player,
-            objectB: this.enemy,
-            callback: () => {
-                this.lose(this.enemy, this.player);
+            objectB: this.enemies.getChildren(),
+            callback: eventData => {
+                console.log("enemy touched", eventData);
+                this.lose(this.enemies, eventData.gameObjectB, this.player);
             },
         });
         // power-up
@@ -95,9 +97,6 @@ export default class GameScene extends Phaser.Scene {
             this.player,
             this.info.enemies,
         );
-        this.enemy = new Enemy(this.matter.world, 500, 250);
-        console.log(this.enemies);
-        this.enemy.anims.play("move-enemy");
         this.emitEnemyMovementTimer = this.time.addEvent({
             delay: 500,
             callback: () => {
@@ -106,6 +105,21 @@ export default class GameScene extends Phaser.Scene {
             },
             repeat: -1,
         });
+        // let arr = [...this.enemies.getChildren()];
+        // console.log("getting children", this.enemies.getChildren());
+        // console.log("CHILDREN", arr);
+        // this.time.addEvent({
+        //     delay: 1000,
+        //     callback: () => {
+        //         if (this.enemies.getChildren()) {
+        //             console.log("chillen", this.enemies.getChildren());
+        //         }
+        //         let arr = [...this.enemies.getChildren()];
+        //         console.log("getting children", this.enemies.getChildren());
+        //         console.log("CHILDREN", arr);
+        //     },
+        //     repeat: -1,
+        // });
 
         // gate
         this.gate = new Gate(this.matter.world, 300, 100, "gate");
@@ -125,7 +139,7 @@ export default class GameScene extends Phaser.Scene {
         this.addCollisions();
     }
 
-    lose(enemy, player) {
+    lose(enemies, enemy, player) {
         player.setVisible(false);
         this.cameras.main.startFollow(enemy);
         enemy.anims.play("eek-lose");
