@@ -100,9 +100,9 @@ export default class BootScene extends Phaser.Scene {
 
         // HUD
         this.anims.create({
-            key: "HUD",
+            key: "HUD-Warning",
             frames: this.anims.generateFrameNames("HUD", {
-                frames: [4, 5, 6],
+                frames: [0, 1, 2, 3, 4],
             }),
             frameRate: 4,
             yoyo: false,
@@ -114,6 +114,9 @@ export default class BootScene extends Phaser.Scene {
                 max: 3,
                 distanceFromPlayer: 200,
                 setScale: 4,
+            },
+            enemies: {
+                num: 3,
             },
         });
     }

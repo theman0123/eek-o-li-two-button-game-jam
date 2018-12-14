@@ -2,20 +2,22 @@ import "phaser";
 import Player from "../Sprites/Player";
 import Gate from "../Sprites/Gate";
 import Enemy from "../Sprites/Enemy";
-import Enemies from "../Groups/Enemies";
+import EnemiesGroup from "../Groups/EnemiesGroup";
 import PowerUps from "../Groups/PowerUps";
 import PowerUp from "../Sprites/PowerUp";
-// import { MatterAttractors } from "matter-attractors";
+import HUD from "../Sprites/HUD";
 
-export default class BootScene extends Phaser.Scene {
+export default class GameScene extends Phaser.Scene {
     constructor(key) {
         super(key);
     }
 
     init(info) {
         this.info = info;
-        // const { level, powerUps } = this.info;
-        // bad logic
+        // this.info.enemies;
+        // this.info.enemies.max = 1;
+        console.log(this.info);
+        // bad logic: jumps from level 1 to 3 sometimess
         this.info.level === 0 ? this.info.level++ : this.info.level++;
         // console.log(this.info);
         this.events.emit("info", this.info);
@@ -45,11 +47,6 @@ export default class BootScene extends Phaser.Scene {
             objectB: this.enemy,
             callback: () => {
                 this.lose(this.enemy, this.player);
-                // this.time.addEvent({
-                //     delay: 1000,
-                //     callback: () => this.lose(this.enemy, this.player),
-                //     callbackScope: this.scene,
-                // });
             },
         });
         // power-up
@@ -73,51 +70,11 @@ export default class BootScene extends Phaser.Scene {
 
     create() {
         this.matter.world.setBounds(0, 0, 1800, 1800, 115);
-        // enable attractor plugin for lose frames
-        // this.plugins.installScenePlugin(
-        //     "matterAttractorsPlugin",
-        //     MatterAttractors,
-        //     "matterAttractors",
-        // );
-
-        // this.matter.use(MatterAttractors);
-        // this.matter.system.enableAttractorPlugin();
         // listen for resize events
         this.events.on("resize", this.resize, this);
-
         // create Player
-        this.player = new Player(this.matter.world, this, 300, 350, {
-            plugin: {
-                attractors: [
-                    function(bodyA, bodyB) {
-                        return {
-                            x: (bodyA.position.x - bodyB.position.x) * 0.000001,
-                            y: (bodyA.position.y - bodyB.position.y) * 0.000001,
-                        };
-                    },
-                ],
-            },
-        });
-        this.player.anims.play("tumble");
-        this.test = this.matter.add.image(400, 800, "gate", null, {
-            shape: {
-                type: "circle",
-                radius: 64,
-            },
-            plugin: {
-                attractors: [
-                    function(bodyA, bodyB) {
-                        return {
-                            x: (bodyA.position.x - bodyB.position.x) * 1e-6,
-                            y: (bodyA.position.y - bodyB.position.y) * 1e-6,
-                        };
-                    },
-                ],
-            },
-        });
-        this.matter.add.mouseSpring();
+        this.player = new Player(this.matter.world, 300, 350);
 
-        console.log(this, this.plugins, this.plugins.scenePlugins);
         // player movement and related listeners
         // click or touch for tumble
         this.input.on("pointerdown", () => {
@@ -128,15 +85,27 @@ export default class BootScene extends Phaser.Scene {
         this.input.on("pointerup", () => {
             this.player.move = true;
             this.events.emit("moveEek", this.player, this);
+            // this.emitEnemyMovementTimer.start();
         });
 
         // enemy
-
-        this.enemy = new Enemy(this.matter.world, this, 350, 450, {
-            x: this.player.x,
-            y: this.player.y,
-        });
+        this.enemies = new EnemiesGroup(
+            this.matter.world,
+            this,
+            this.player,
+            this.info.enemies,
+        );
+        this.enemy = new Enemy(this.matter.world, 500, 250);
+        console.log(this.enemies);
         this.enemy.anims.play("move-enemy");
+        this.emitEnemyMovementTimer = this.time.addEvent({
+            delay: 500,
+            callback: () => {
+                this.events.emit("gatherEnemyMovements", this);
+                // console.log("gather enemy movement");
+            },
+            repeat: -1,
+        });
 
         // gate
         this.gate = new Gate(this.matter.world, 300, 100, "gate");

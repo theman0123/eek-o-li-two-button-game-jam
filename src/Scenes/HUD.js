@@ -1,8 +1,9 @@
 import "phaser";
+import HUD from "../Sprites/HUD";
 
 export default class HUDScene extends Phaser.Scene {
     constructor() {
-        super({ key: "HUD", active: true });
+        super({ key: "HUD" });
     }
 
     init() {
@@ -14,6 +15,7 @@ export default class HUDScene extends Phaser.Scene {
     create() {
         // get a reference to game scene
         this.gameScene = this.scene.get("Game");
+
         // get info
         this.gameScene.events.on(
             "info",
@@ -31,22 +33,38 @@ export default class HUDScene extends Phaser.Scene {
             this,
         );
 
+        // HARD CODED PLEASE REMOVE
+        this.enemyDistanceX = 500;
+        this.enemyDistanceY = -400; //this.time.addEvent({
+        //     delay: 2000,
+        //     callback: () => {
+        //         this.enemyDistance = Phaser.Math.Distance.Between(
+        //             500,
+        //             300,
+        //             this.x,
+        //             this.y,
+        //         );
+        //     },
+        //     callbackScope: this,
+        // });
+        console.log("distance from eek: ", this.enemyDistanceX);
+
         // listen for enemy movement
-        this.gameScene.events.on("enemyMovement", (scene, enemy) => {
-            console.log("enemy in HUD");
-            if (this.playerPosition) {
-                let { x, y } = this.playerPosition;
-                // change with groups
-                this.enemyDistance = Phaser.Math.Distance.Between(
-                    enemy.x,
-                    enemy.y,
-                    x,
-                    y,
-                );
-                console.log("distance from eek: ", this.enemyDistance);
-                console.log(Phaser.Math.Distance);
-            }
-        });
+        // this.gameScene.events.on("movementDispatched", (scene, enemy) => {
+        //     console.log("HUD movement dispatched");
+            // if (this.playerPosition) {
+            //     let { x, y } = this.playerPosition;
+            //     // change with groups
+                // this.enemyDistance = Phaser.Math.Distance.Between(
+                //     enemy.x,
+                //     enemy.y,
+                //     x,
+                //     y,
+                // );
+            //     console.log("distance from eek: ", this.enemyDistance);
+            //     console.log(Phaser.Math.Distance);
+            // }
+        // });
         this.gameScene.events.on(
             "playerPosition",
             (scene, player) => {

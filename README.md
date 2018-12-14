@@ -1,5 +1,10 @@
 # notes on phaser
 
+# Gotchyas
+
+-   By default, if a Scene at the top of the scene list receives and handles a valid input request, then all of the Scenes below that one will just skip their input processing in order to save time. You can change this behavior by calling this.input.setGlobalTopOnly(false) from any Scene. Every Scene will then process input, regardless of its position in the scene list.
+-   if the above comment includes event emitters, then it makes sense that all other emitters stop
+
 #notes on tweens
 
 -   must have correct context (scene)

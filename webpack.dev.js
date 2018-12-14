@@ -7,8 +7,6 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const common = require("./webpack.common.js");
 const colors = require("colors/safe");
 const version = require("./package.json").version;
-const Matter = require("matter-attractors");
-
 const portfinder = require("portfinder");
 portfinder.basePort = 4000;
 
@@ -43,7 +41,6 @@ portfinder.getPort(function(err, finalPort) {
                     template: "index.html",
                     inject: "body",
                 }),
-                // Matter.use("matter-gravity", "matter-world-wrap"),
             ],
         }),
     );
