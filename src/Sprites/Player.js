@@ -5,7 +5,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         super(world, x, y, "eek-tumble");
         // this.scene = scene;
         this.move = false;
-
+        // is alive?
+        this.isAlive = true;
         //  add our player to the scene
         this.scene.add.existing(this);
         // console.log(this.scene.matter, this, this.plugin);
@@ -42,7 +43,13 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             scene.time.removeAllEvents();
             this.move = true;
             this.moveEek(player, scene);
-            scene.events.emit("playerPosition", scene, player);
+            // check if enemies still hone
+            // context notes: this = scene = correct player but enemy NOT Homing!!!!
+            // this = this.scene = lose context of player in enemy methods enemy NOT Homing!!!
+            // start here...
+            // this = player homing works!!!
+            // lose context on restart
+            scene.events.emit("playerPosition", (scene, player), player);
         });
 
         this.scene.events.on("killSpeedTracker", player => {

@@ -3,7 +3,7 @@ import Player from "../Sprites/Player";
 import Gate from "../Sprites/Gate";
 import Enemy from "../Sprites/Enemy";
 import EnemiesGroup from "../Groups/EnemiesGroup";
-import PowerUps from "../Groups/PowerUps";
+import PowerUps from "../Groups/PowerUpsGroup";
 import PowerUp from "../Sprites/PowerUp";
 import HUD from "../Sprites/HUD";
 
@@ -14,12 +14,10 @@ export default class GameScene extends Phaser.Scene {
 
     init(info) {
         this.info = info;
-        // this.info.enemies;
-        // this.info.enemies.max = 1;
         console.log(this.info);
         // bad logic: jumps from level 1 to 3 sometimess
         this.info.level === 0 ? this.info.level++ : this.info.level++;
-        // console.log(this.info);
+
         this.events.emit("info", this.info);
     }
 
@@ -47,27 +45,21 @@ export default class GameScene extends Phaser.Scene {
             objectA: this.player,
             objectB: this.enemies.getChildren(),
             callback: eventData => {
-                console.log("enemy touched", eventData);
                 this.lose(this.enemies, eventData.gameObjectB, this.player);
             },
         });
         // power-up
-        // this.matterCollision.addOnCollideStart({
-        //     objectA: this.player,
-        //     objectB: this.powerup,
-        //     callback: () => {
-        //         this.time.addEvent({
-        //             delay: 1000,
-        //             callback: this.powerup.activatePowerUp(
-        //                 this.player,
-        //                 this.powerup,
-        //                 this,
-        //             ), // be sure you get correct one after changing to a group
-        //             callbackScope: this.scene,
-        //             repeat: -1,
-        //         });
-        //     },
-        // });
+        this.matterCollision.addOnCollideStart({
+            objectA: this.player,
+            objectB: this.powerUpsGroup.getChildren(),
+            callback: eventData => {
+                eventData.gameObjectB.activatePowerUp(
+                    this.player,
+                    eventData.gameObjectB,
+                    this,
+                );
+            }
+        });
     }
 
     create() {
@@ -80,14 +72,17 @@ export default class GameScene extends Phaser.Scene {
         // player movement and related listeners
         // click or touch for tumble
         this.input.on("pointerdown", () => {
-            this.player.move = false;
-            this.events.emit("beginTumble", this);
+            if (this.player.isAlive) {
+                this.player.move = false;
+                this.events.emit("beginTumble", this);
+            }
         });
         // release touch or click for thrust
         this.input.on("pointerup", () => {
-            this.player.move = true;
-            this.events.emit("moveEek", this.player, this);
-            // this.emitEnemyMovementTimer.start();
+            if (this.player.isAlive) {
+                this.player.move = true;
+                this.events.emit("moveEek", this.player, this);
+            }
         });
 
         // enemy
@@ -97,41 +92,18 @@ export default class GameScene extends Phaser.Scene {
             this.player,
             this.info.enemies,
         );
-        this.emitEnemyMovementTimer = this.time.addEvent({
-            delay: 500,
-            callback: () => {
-                this.events.emit("gatherEnemyMovements", this);
-                // console.log("gather enemy movement");
-            },
-            repeat: -1,
-        });
-        // let arr = [...this.enemies.getChildren()];
-        // console.log("getting children", this.enemies.getChildren());
-        // console.log("CHILDREN", arr);
-        // this.time.addEvent({
-        //     delay: 1000,
-        //     callback: () => {
-        //         if (this.enemies.getChildren()) {
-        //             console.log("chillen", this.enemies.getChildren());
-        //         }
-        //         let arr = [...this.enemies.getChildren()];
-        //         console.log("getting children", this.enemies.getChildren());
-        //         console.log("CHILDREN", arr);
-        //     },
-        //     repeat: -1,
-        // });
 
         // gate
         this.gate = new Gate(this.matter.world, 300, 100, "gate");
-        this.gate.anims.play("flash");
 
         // create power-ups group
         // this.powerup = new PowerUp(this.matter.world, this, 250, 300);
-        // this.powerUpsGroup = new PowerUps(
-        //     this.physics.world,
-        //     this,
-        //     this.info.powerUps,
-        // );
+        this.powerUpsGroup = new PowerUps(
+            this.matter.world,
+            this,
+            this.player,
+            this.info.powerUps,
+        );
 
         // update camera to follow this.player
         this.cameras.main.startFollow(this.player);
@@ -140,6 +112,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     lose(enemies, enemy, player) {
+        player.isAlive = false;
         player.setVisible(false);
         this.cameras.main.startFollow(enemy);
         enemy.anims.play("eek-lose");
