@@ -1,9 +1,12 @@
 import "phaser";
 
 export default class Player extends Phaser.Physics.Matter.Sprite {
-    constructor(world, x, y) {
+    constructor(world, x, y, scene) {
         super(world, x, y, "eek-tumble");
-        // this.scene = scene;
+        // passing scene seems to solve some problems
+        this.scene = scene;
+        // this.world = world;
+        // console.log(this, scene, this.scene);
         this.move = false;
         // is alive?
         this.isAlive = true;
@@ -24,33 +27,52 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.setFriction(5);
         // play animation
         this.play("tumble");
-        // movement pattern
-        this.left = true;
-        this.right = false;
+
+        // player movement and related listeners
+        // click or touch for tumble
+        // request enemy location entering tumble
+        this.scene.input.on("pointerdown", () => {
+            if (this.isAlive) {
+                this.move = false;
+                // was this
+                this.scene.events.emit("beginTumble", this, this.scene);
+                this.scene.events.emit("requestEnemyLocation", this, this);
+            }
+        });
+
+        // release touch or click for thrust
+        this.scene.input.on("pointerup", () => {
+            // context is eek
+            if (this.isAlive) {
+                this.move = true;
+                this.scene.events.emit("moveEek", this, this);
+                this.scene.time.removeAllEvents();
+                this.move = true;
+                this.moveEek();
+                this.handleAnims();
+                this.scene.events.emit(
+                    "playerPosition",
+                    (this.scene, this),
+                    this,
+                );
+            }
+        });
 
         // tumble event
-        this.scene.events.on("beginTumble", scene => {
-            scene.player.handleAnims(scene);
-            scene.time.addEvent({
-                delay: 150,
-                callback: this.tumble,
-                callbackScope: scene.player,
-                repeat: -1,
-            });
-        });
-        // move event
-        this.scene.events.on("moveEek", (player, scene) => {
-            scene.time.removeAllEvents();
-            this.move = true;
-            this.moveEek(player, scene);
-            // check if enemies still hone
-            // context notes: this = scene = correct player but enemy NOT Homing!!!!
-            // this = this.scene = lose context of player in enemy methods enemy NOT Homing!!!
-            // start here...
-            // this = player homing works!!!
-            // lose context on restart
-            scene.events.emit("playerPosition", (scene, player), player);
-        });
+        this.scene.events.on(
+            "beginTumble",
+            scene => {
+                // console.log("begin tumble context", this, scene);
+                this.scene.time.addEvent({
+                    delay: 150,
+                    callback: this.tumble,
+                    repeat: -1,
+                    callbackScope: this,
+                });
+                this.handleAnims();
+            },
+            this.scene,
+        );
 
         this.scene.events.on("killSpeedTracker", player => {
             player.speedTracker.remove();
@@ -58,20 +80,18 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     // move eek
-    moveEek(player, scene) {
-        // handle animation
-        player.handleAnims(scene);
+    moveEek(scene) {
         // handle body physics
-        scene.player.thrust(0.025);
-        scene.player.thrustLeft(0.123);
+        this.thrust(0.025);
+        this.thrustLeft(0.123);
         // check speed for when eek slows to a crawl
-        player.speedTracker = scene.time.addEvent({
+        this.speedTracker = this.scene.time.addEvent({
             delay: 1000,
             callback: () => {
-                if (player.body.speed <= 1) {
-                    player.move = false;
-                    scene.events.emit("killSpeedTracker", player);
-                    player.handleAnims(scene);
+                if (this.body.speed <= 1) {
+                    this.move = false;
+                    this.scene.events.emit("killSpeedTracker", this);
+                    this.handleAnims(scene);
                 }
             },
             repeat: -1,
@@ -79,21 +99,18 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     }
 
     handleAnims(scene) {
-        const { currentAnim, isPlaying } = scene.player.anims;
-        // check for current texture-- switch animation
-        if (!scene.player.move) {
-            scene.player.anims.stop("engage", false);
-            scene.player.anims.play("tumble");
+        // switch animation
+        if (!this.move) {
+            this.anims.stop("engage", false);
+            this.play("tumble");
         } else {
-            scene.player.anims.stop("tumble");
-            scene.player.anims.play("engage", false);
+            this.anims.stop("tumble");
+            this.play("engage", false);
         }
     }
     // handle body to create tumble physics
     tumble() {
         // this.setFriction(10);
-        // let leftOrRight = this.rotationReducer() ? 90 : -90; //neg or : positive;
-        console.log("ANGLE", this.angle);
-        !this.move ? this.setAngle(this.angle + 90) : null;
+        !this.move ? this.setAngle(this.angle + 88) : null;
     }
 }

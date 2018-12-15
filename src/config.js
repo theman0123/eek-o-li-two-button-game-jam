@@ -4,8 +4,8 @@ export default {
     type: Phaser.AUTO,
     parent: "two-button-jam",
     canvas: document.getElementById("game"),
-    width: 1500, // window.innerWidth
-    height: 1500, // window.innerHeight
+    width: 800, // window.innerWidth
+    height: 600, // window.innerHeight
     pixelArt: true,
     roundPixels: true,
     physics: {

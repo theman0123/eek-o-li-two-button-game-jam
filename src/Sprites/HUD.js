@@ -1,16 +1,27 @@
 import "phaser";
 
 export default class HUD extends Phaser.GameObjects.Sprite {
-    constructor(world, x, y) {
-        super(world, x, y, "HUD", 0);
+    constructor(scene) {
+        super(
+            scene,
+            scene.game.config.width,
+            scene.game.config.height,
+            "HUD",
+            7,
+        );
         // add to scene
         this.scene.add.existing(this);
         // modify size
-        this.setDisplaySize(window.innerWidth, window.innerHeight);
+        this.setDisplaySize(scene.game.config.width, scene.game.config.height);
         // place on top layer
         this.setDepth(2);
-        this.setDisplayOrigin(0, 0);
-        // window.innerWidth
+        // fix to camera
+        this.setScrollFactor(0);
+        // align to view
+        this.setOrigin(1);
+        // set invisible
+        this.setVisible(false);
+
         // this.play("HUD-Warning");
     }
 }

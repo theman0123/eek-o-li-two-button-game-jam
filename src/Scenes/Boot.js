@@ -100,9 +100,17 @@ export default class BootScene extends Phaser.Scene {
 
         // HUD
         this.anims.create({
-            key: "HUD-Warning",
+            key: "HUD-WarningLR",
             frames: this.anims.generateFrameNames("HUD", {
-                frames: [0, 1, 2, 3, 4],
+                frames: [3, 4, 5],
+            }),
+            frameRate: 4,
+            yoyo: false,
+        });
+        this.anims.create({
+            key: "HUD-WarningUD",
+            frames: this.anims.generateFrameNames("HUD", {
+                frames: [6, 7, 8],
             }),
             frameRate: 4,
             yoyo: false,
