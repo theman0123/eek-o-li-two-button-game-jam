@@ -98,7 +98,7 @@ export default class GameScene extends Phaser.Scene {
 
         // HUD
         this.hud = new HUD(this);
-
+        
         this.events.on("enemyLocationToHUD", (player, enemy) => {
             // console.log("hud", this);
 
