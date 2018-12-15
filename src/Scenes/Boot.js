@@ -23,6 +23,10 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 32,
         });
+        this.load.spritesheet("HUD", "assets/tex/HUD.png", {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
         this.load.image("power-up", "assets/tex/power-up.png");
     }
 
@@ -94,13 +98,27 @@ export default class BootScene extends Phaser.Scene {
             yoyo: false,
         });
 
+        // HUD
+        this.anims.create({
+            key: "HUD-Warning",
+            frames: this.anims.generateFrameNames("HUD", {
+                frames: [0, 1, 2, 3, 4],
+            }),
+            frameRate: 4,
+            yoyo: false,
+        });
         // start game
         this.scene.start("Game", {
             level: 0,
             powerUps: {
-                max: 3,
-                distanceFromPlayer: 200,
-                setScale: 4,
+                num: 3,
+                maxStartDistance: 200,
+                minStartDistance: 50,
+            },
+            enemies: {
+                num: 3,
+                maxStartDistance: 500,
+                minStartDistance: 200,
             },
         });
     }

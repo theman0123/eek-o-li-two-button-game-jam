@@ -2,21 +2,23 @@ import "phaser";
 import Player from "../Sprites/Player";
 import Gate from "../Sprites/Gate";
 import Enemy from "../Sprites/Enemy";
-import Enemies from "../Groups/Enemies";
-import PowerUps from "../Groups/PowerUps";
+import EnemiesGroup from "../Groups/EnemiesGroup";
+import PowerUps from "../Groups/PowerUpsGroup";
 import PowerUp from "../Sprites/PowerUp";
+import HUD from "../Sprites/HUD";
 
-export default class BootScene extends Phaser.Scene {
+export default class GameScene extends Phaser.Scene {
     constructor(key) {
         super(key);
     }
 
     init(info) {
         this.info = info;
-        // const { level, powerUps } = this.info;
-        // bad logic
+        console.log(this.info);
+        // bad logic: jumps from level 1 to 3 sometimess
         this.info.level === 0 ? this.info.level++ : this.info.level++;
-        // console.log(this.info);
+
+        this.events.emit("info", this.info);
     }
 
     preload() {}
@@ -37,110 +39,71 @@ export default class BootScene extends Phaser.Scene {
                 });
             },
         });
+
         // level lose
         this.matterCollision.addOnCollideStart({
             objectA: this.player,
-            objectB: this.enemy,
-            callback: () => {
-                this.lose(this.enemy, this.player);
-                // this.time.addEvent({
-                //     delay: 1000,
-                //     callback: () => this.lose(this.enemy, this.player),
-                //     callbackScope: this.scene,
-                // });
+            objectB: this.enemies.getChildren(),
+            callback: eventData => {
+                this.lose(this.enemies, eventData.gameObjectB, this.player);
             },
         });
         // power-up
-        // this.matterCollision.addOnCollideStart({
-        //     objectA: this.player,
-        //     objectB: this.powerup,
-        //     callback: () => {
-        //         this.time.addEvent({
-        //             delay: 1000,
-        //             callback: this.powerup.activatePowerUp(
-        //                 this.player,
-        //                 this.powerup,
-        //                 this,
-        //             ), // be sure you get correct one after changing to a group
-        //             callbackScope: this.scene,
-        //             repeat: -1,
-        //         });
-        //     },
-        // });
+        this.matterCollision.addOnCollideStart({
+            objectA: this.player,
+            objectB: this.powerUpsGroup.getChildren(),
+            callback: eventData => {
+                eventData.gameObjectB.activatePowerUp(
+                    this.player,
+                    eventData.gameObjectB,
+                    this,
+                );
+            }
+        });
     }
 
     create() {
         this.matter.world.setBounds(0, 0, 1800, 1800, 115);
-        // enable attractor plugin for lose frames
-        // this.matter.use(MatterAttractors);
-        // this.matter.system.enableAttractorPlugin();
         // listen for resize events
         this.events.on("resize", this.resize, this);
-
         // create Player
-        this.player = new Player(this.matter.world, this, 300, 350, {
-            plugin: {
-                attractors: [
-                    function(bodyA, bodyB) {
-                        return {
-                            x: (bodyA.position.x - bodyB.position.x) * 0.000001,
-                            y: (bodyA.position.y - bodyB.position.y) * 0.000001,
-                        };
-                    },
-                ],
-            },
-        });
-        this.player.anims.play("tumble");
-        this.test = this.matter.add.image(400, 800, "gate", null, {
-            shape: {
-                type: "circle",
-                radius: 64,
-            },
-            plugin: {
-                attractors: [
-                    function(bodyA, bodyB) {
-                        return {
-                            x: (bodyA.position.x - bodyB.position.x) * 1e-6,
-                            y: (bodyA.position.y - bodyB.position.y) * 1e-6,
-                        };
-                    },
-                ],
-            },
-        });
-        this.matter.add.mouseSpring();
+        this.player = new Player(this.matter.world, 300, 350);
 
-        console.log(this, this.plugins, this.plugins.scenePlugins);
         // player movement and related listeners
         // click or touch for tumble
         this.input.on("pointerdown", () => {
-            this.player.move = false;
-            this.events.emit("beginTumble", this);
+            if (this.player.isAlive) {
+                this.player.move = false;
+                this.events.emit("beginTumble", this);
+            }
         });
         // release touch or click for thrust
         this.input.on("pointerup", () => {
-            this.player.move = true;
-            this.events.emit("moveEek", this.player, this);
+            if (this.player.isAlive) {
+                this.player.move = true;
+                this.events.emit("moveEek", this.player, this);
+            }
         });
 
         // enemy
-
-        this.enemy = new Enemy(this.matter.world, this, 350, 450, {
-            x: this.player.x,
-            y: this.player.y,
-        });
-        this.enemy.anims.play("move-enemy");
+        this.enemies = new EnemiesGroup(
+            this.matter.world,
+            this,
+            this.player,
+            this.info.enemies,
+        );
 
         // gate
-        this.gate = new Gate(this.matter.world, 300, 100, "gate"); //this.matter.add.sprite(300, 100, "gate");
-        this.gate.anims.play("flash");
+        this.gate = new Gate(this.matter.world, 300, 100, "gate");
 
         // create power-ups group
         // this.powerup = new PowerUp(this.matter.world, this, 250, 300);
-        // this.powerUpsGroup = new PowerUps(
-        //     this.physics.world,
-        //     this,
-        //     this.info.powerUps,
-        // );
+        this.powerUpsGroup = new PowerUps(
+            this.matter.world,
+            this,
+            this.player,
+            this.info.powerUps,
+        );
 
         // update camera to follow this.player
         this.cameras.main.startFollow(this.player);
@@ -148,7 +111,8 @@ export default class BootScene extends Phaser.Scene {
         this.addCollisions();
     }
 
-    lose(enemy, player) {
+    lose(enemies, enemy, player) {
+        player.isAlive = false;
         player.setVisible(false);
         this.cameras.main.startFollow(enemy);
         enemy.anims.play("eek-lose");

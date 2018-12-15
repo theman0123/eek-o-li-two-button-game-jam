@@ -1,84 +1,90 @@
 import "phaser";
 
 export default class Enemy extends Phaser.Physics.Matter.Sprite {
-    constructor(world, scene, x, y) {
+    constructor(world, x, y) {
         super(world, x, y, "enemy");
-        // make scene available to all methods by placing it on 'this'
-        this.scene = scene;
-
         // add our enemy to the scene
         this.scene.add.existing(this);
         // fix bounding box
         this.setBody({ shape: "square", width: 10, height: 10 });
-
         // scale enemy
         this.setScale(4);
+        // play animations
+        this.play("move-enemy");
+        // calculate movement with these
+        this.directionToPlayer = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+        };
+        // powerups when activated change this (see this.executeMovement)
+        this.avoid = false;
 
-        // console.log(
-        //     "THIS IN ENEMY",
-        //     this,
-        //     "SCENE",
-        //     scene,
-        //     "THIS.SCENE",
-        //     this.scene,
-        // );
-
-        this.scene.events.on("playerPosition", (player, scene) => {
-            this.honeTween(player, scene);
-        });
-        this.scene.events.on("powerupActivated", playerPosition => {
-            // console.log(
-            //     "powerup activated enemy",
-            //     playerPosition,
-            //     this.scene.tweens,
-            // );
-            // distance between enemy and player
-            let totalX = playerPosition.x - this.x;
-            // console.log("totalX", totalX, playerPosition.x, this.scene.enemy.x);
-            this.move = this.scene.tweens.add({
-                targets: this.scene.enemy,
-                x: 155,
-                y: 155,
-                duration: 3500,
-                paused: true,
-                ease: "Sine.easeInOut",
-                // getEndValue: enemy => {
-                //     this.scene.tweens.hone.restart();
-                // },
-            });
-            this.move.restart();
-        });
+        this.scene.events.on(
+            "playerPosition",
+            (scene, player) => {
+                this.calculateMovement(player);
+                this.executeMovement(scene);
+            },
+            this,
+        );
+        this.scene.events.on(
+            "powerupActivated",
+            (scene, player) => {
+                this.avoidPlayer(player, this);
+                this.executeMovement(scene);
+            },
+            this,
+        );
+    }
+    // powerup activated: run away from player
+    avoidPlayer(player) {
+        console.log(this);
+        this.directionToPlayer = {
+            up: !(this.y > player.y),
+            down: !(this.y < player.y),
+            left: !(this.x > player.x),
+            right: !(this.x < player.x),
+        };
+        this.avoid = true;
     }
 
-    honeTween(player, scene) {
-        console.log("enemy honing to:", player.x, player.y);
-        this.scene = scene;
-        if (this.hone) {
-            this.hone.restart();
-            // this.hone.onComplete(() => {
-            // console.log(
-            //     "complete",
-            //     this.hone.data[0].getEndValue(),
-            //     this.hone.data[1].getEndValue(),
-            // );
-            // this.x = this.hone.data[0].getEndValue();
-            // this.y = this.hone.data[1].getEndValue();
-            // });
-        } else {
-            this.hone = this.scene.tweens.add({
-                targets: this,
-                x: player.x,
-                y: player.y,
-                duration: 3500,
-                paused: true,
-                ease: "Sine.easeInOut",
-            });
-            this.hone.restart();
+    // to make it work on restart : this
+    calculateMovement(player) {
+        let distance = Phaser.Math.Distance.Between(
+            player.x,
+            player.y,
+            this.x,
+            this.y,
+        );
+        this.directionToPlayer = {
+            up: this.y > player.y,
+            down: this.y < player.y,
+            left: this.x > player.x,
+            right: this.x < player.x,
+        };
+    }
+
+    executeMovement(scene) {
+        let velocity;
+        this.avoid ? (velocity = 5) : (velocity = 2.2);
+
+        // honing movement
+        if (this.directionToPlayer.up === true) {
+            if (this.directionToPlayer.left === true) {
+                this.setVelocity(-velocity);
+            } else {
+                this.setVelocity(velocity, -velocity);
+            }
         }
+        if (this.directionToPlayer.down === true) {
+            if (this.directionToPlayer.left === true) {
+                this.setVelocity(-velocity, velocity);
+            } else {
+                this.setVelocity(velocity);
+            }
+        }
+        this.avoid = false;
     }
 }
-
-// if (this.x > playerPosition.x) this.x -= 20;
-// else this.x += 20;
-// if (this.x > playerPosition.y) this.y -= 20;
-// else this.y += 20;
