@@ -37,10 +37,14 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
             },
             this,
         );
+
+        // alert location to HUD
+        this.scene.events.on("requestEnemyLocation", player => {
+            this.scene.events.emit("enemyLocationToHUD", (this, player), this);
+        });
     }
     // powerup activated: run away from player
     avoidPlayer(player) {
-        console.log(this);
         this.directionToPlayer = {
             up: !(this.y > player.y),
             down: !(this.y < player.y),
@@ -65,6 +69,8 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
             right: this.x < player.x,
         };
     }
+
+    dispatchLocation() {}
 
     executeMovement(scene) {
         let velocity;

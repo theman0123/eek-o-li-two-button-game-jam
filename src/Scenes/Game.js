@@ -6,6 +6,7 @@ import EnemiesGroup from "../Groups/EnemiesGroup";
 import PowerUps from "../Groups/PowerUpsGroup";
 import PowerUp from "../Sprites/PowerUp";
 import HUD from "../Sprites/HUD";
+import GraphicsHud from "../Sprites/GraphicsHud";
 
 export default class GameScene extends Phaser.Scene {
     constructor(key) {
@@ -17,7 +18,7 @@ export default class GameScene extends Phaser.Scene {
         console.log(this.info);
         // bad logic: jumps from level 1 to 3 sometimess
         this.info.level === 0 ? this.info.level++ : this.info.level++;
-
+        this.loadingLevel = false;
         this.events.emit("info", this.info);
     }
 
@@ -58,32 +59,22 @@ export default class GameScene extends Phaser.Scene {
                     eventData.gameObjectB,
                     this,
                 );
-            }
+            },
         });
     }
 
     create() {
+        // this.cameras.main.setScroll(
+        //     -this.game.config.width / 2,
+        //     -this.game.config.height / 2,
+        // );
+
+        // console.log(this.getCenterX());
         this.matter.world.setBounds(0, 0, 1800, 1800, 115);
         // listen for resize events
         this.events.on("resize", this.resize, this);
         // create Player
-        this.player = new Player(this.matter.world, 300, 350);
-
-        // player movement and related listeners
-        // click or touch for tumble
-        this.input.on("pointerdown", () => {
-            if (this.player.isAlive) {
-                this.player.move = false;
-                this.events.emit("beginTumble", this);
-            }
-        });
-        // release touch or click for thrust
-        this.input.on("pointerup", () => {
-            if (this.player.isAlive) {
-                this.player.move = true;
-                this.events.emit("moveEek", this.player, this);
-            }
-        });
+        this.player = new Player(this.matter.world, 300, 350, this);
 
         // enemy
         this.enemies = new EnemiesGroup(
@@ -104,6 +95,58 @@ export default class GameScene extends Phaser.Scene {
             this.player,
             this.info.powerUps,
         );
+
+        // HUD
+        this.hud = new HUD(this);
+        
+        this.events.on("enemyLocationToHUD", (player, enemy) => {
+            // console.log("hud", this);
+
+            this.enemyAlertStatus =
+                Phaser.Math.Distance.Between(
+                    enemy.x,
+                    enemy.y,
+                    player.x,
+                    player.y,
+                ) < 500
+                    ? "HIGH_ALERT"
+                    : "LOW_ALERT";
+            console.log("alert status", this.enemyAlertStatus);
+            if (enemy.x > player.x) {
+                this.hud.setFlipX(true);
+                this.hud.setVisible(true);
+                // this.hud.anims.stop("HUD-WarningUD");
+                this.hud.anims.play("HUD-WarningLR");
+                console.log("hud right");
+            }
+            if (enemy.x < player.x) {
+                this.hud.setFlipX(false);
+                this.hud.setVisible(true);
+                // this.hud.anims.stop("HUD-WarningUD");
+                this.hud.anims.play("HUD-WarningLR");
+                // this.hud.on("aninmationComplete", () => {
+                //     console.log("this", this);
+                //     this.hud.setVisible(false);
+                // });
+                console.log("hud left");
+            }
+            if (enemy.y > player.y) {
+                this.hud.setFlipY(false);
+                this.hud.setVisible(true);
+                // this.hud.anims.stop("HUD-WarningLR");
+                this.hud.anims.play("HUD-WarningUD");
+                console.log("hud down");
+            }
+            if (enemy.y < player.y) {
+                this.hud.setFlipY(true);
+                this.hud.setVisible(true);
+
+                // this.hud.anims.stop("HUD-WarningLR");
+                this.hud.anims.play("HUD-WarningUD");
+                console.log("hud up");
+            }
+            console.log(this.hud.x, this.hud.y, this.hud);
+        });
 
         // update camera to follow this.player
         this.cameras.main.startFollow(this.player);
@@ -129,14 +172,21 @@ export default class GameScene extends Phaser.Scene {
     }
 
     restart() {
-        this.cameras.main.startFollow(this.gate);
-        this.gate.anims.stop("flash");
-        this.player.setVisible(false);
-        this.gate.anims.play("levelWin");
-        this.cameras.main.fade(1500, 0, 0, 0);
-        this.cameras.main.on("camerafadeoutcomplete", () => {
-            this.scene.restart(this.info);
-        });
+        if (!this.loadingLevel) {
+            this.cameras.main.startFollow(this.gate);
+            this.player.setVisible(false);
+            this.gate.anims.stop("flash");
+            this.gate.anims.play("levelWin");
+            this.cameras.main.fade(1500, 0, 0, 0);
+            this.cameras.main.on(
+                "camerafadeoutcomplete",
+                () => {
+                    this.scene.restart(this.info);
+                },
+                this,
+            );
+        }
+        this.loadingLevel = true;
     }
 
     update() {}
