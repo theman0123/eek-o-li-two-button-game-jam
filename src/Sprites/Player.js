@@ -3,16 +3,13 @@ import "phaser";
 export default class Player extends Phaser.Physics.Matter.Sprite {
     constructor(world, x, y, scene) {
         super(world, x, y, "eek-tumble");
-        // passing scene seems to solve some problems
+        // still having context issues with sprite on restart...
         this.scene = scene;
-        // this.world = world;
-        // console.log(this, scene, this.scene);
         this.move = false;
         // is alive?
         this.isAlive = true;
         //  add our player to the scene
         this.scene.add.existing(this);
-        // console.log(this.scene.matter, this, this.plugin);
         //  scale player
         this.setScale(4);
         //  set depth
@@ -37,6 +34,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
                 // was this
                 this.scene.events.emit("beginTumble", this, this.scene);
                 this.scene.events.emit("requestEnemyLocation", this, this);
+                this.scene.events.emit("gateSense", this, this.scene);
             }
         });
 
@@ -62,7 +60,6 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.scene.events.on(
             "beginTumble",
             scene => {
-                // console.log("begin tumble context", this, scene);
                 this.scene.time.addEvent({
                     delay: 150,
                     callback: this.tumble,

@@ -1,12 +1,9 @@
 import "phaser";
 import Player from "../Sprites/Player";
 import Gate from "../Sprites/Gate";
-import Enemy from "../Sprites/Enemy";
 import EnemiesGroup from "../Groups/EnemiesGroup";
 import PowerUps from "../Groups/PowerUpsGroup";
-import PowerUp from "../Sprites/PowerUp";
 import HUD from "../Sprites/HUD";
-import GraphicsHud from "../Sprites/GraphicsHud";
 
 export default class GameScene extends Phaser.Scene {
     constructor(key) {
@@ -15,14 +12,11 @@ export default class GameScene extends Phaser.Scene {
 
     init(info) {
         this.info = info;
-        console.log(this.info);
-        // bad logic: jumps from level 1 to 3 sometimess
+        // to do: fix restart issues with context and change level info
         this.info.level === 0 ? this.info.level++ : this.info.level++;
         this.loadingLevel = false;
         this.events.emit("info", this.info);
     }
-
-    preload() {}
 
     // ALPHABETICAL BY METHOD
 
@@ -64,13 +58,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
-        // this.cameras.main.setScroll(
-        //     -this.game.config.width / 2,
-        //     -this.game.config.height / 2,
-        // );
-
-        // console.log(this.getCenterX());
-        this.matter.world.setBounds(0, 0, 1800, 1800, 115);
+        this.matter.world.setBounds(0, 0, 2400, 2400, 115);
         // listen for resize events
         this.events.on("resize", this.resize, this);
         // create Player
@@ -97,61 +85,80 @@ export default class GameScene extends Phaser.Scene {
         );
 
         // HUD
-        this.hud = new HUD(this);
-        
+        this.hudLR = new HUD(this);
+        this.hudUD = new HUD(this);
+
         this.events.on("enemyLocationToHUD", (player, enemy) => {
-            // console.log("hud", this);
+            this.hudEnemyLocation(enemy, player);
+        });
 
-            this.enemyAlertStatus =
-                Phaser.Math.Distance.Between(
-                    enemy.x,
-                    enemy.y,
-                    player.x,
-                    player.y,
-                ) < 500
-                    ? "HIGH_ALERT"
-                    : "LOW_ALERT";
-            console.log("alert status", this.enemyAlertStatus);
-            if (enemy.x > player.x) {
-                this.hud.setFlipX(true);
-                this.hud.setVisible(true);
-                // this.hud.anims.stop("HUD-WarningUD");
-                this.hud.anims.play("HUD-WarningLR");
-                console.log("hud right");
-            }
-            if (enemy.x < player.x) {
-                this.hud.setFlipX(false);
-                this.hud.setVisible(true);
-                // this.hud.anims.stop("HUD-WarningUD");
-                this.hud.anims.play("HUD-WarningLR");
-                // this.hud.on("aninmationComplete", () => {
-                //     console.log("this", this);
-                //     this.hud.setVisible(false);
-                // });
-                console.log("hud left");
-            }
-            if (enemy.y > player.y) {
-                this.hud.setFlipY(false);
-                this.hud.setVisible(true);
-                // this.hud.anims.stop("HUD-WarningLR");
-                this.hud.anims.play("HUD-WarningUD");
-                console.log("hud down");
-            }
-            if (enemy.y < player.y) {
-                this.hud.setFlipY(true);
-                this.hud.setVisible(true);
-
-                // this.hud.anims.stop("HUD-WarningLR");
-                this.hud.anims.play("HUD-WarningUD");
-                console.log("hud up");
-            }
-            console.log(this.hud.x, this.hud.y, this.hud);
+        // hud for gate location
+        this.hudGateLR = new HUD(this);
+        this.hudGateUD = new HUD(this);
+        this.events.on("gateSense", player => {
+            // logic for executing gate
+            this.hudGateLocation(player);
         });
 
         // update camera to follow this.player
         this.cameras.main.startFollow(this.player);
 
         this.addCollisions();
+    }
+
+    hudEnemyLocation(enemy, player) {
+        this.enemyAlertStatus =
+            Phaser.Math.Distance.Between(enemy.x, enemy.y, player.x, player.y) <
+            500
+                ? "HIGH_ALERT"
+                : "LOW_ALERT";
+        if (enemy.x > player.x) {
+            this.hudLR.setFlipX(true);
+            this.hudLR.setVisible(true);
+            this.hudLR.anims.play("HUD-WarningLR");
+        }
+        if (enemy.x < player.x) {
+            this.hudLR.setFlipX(false);
+            this.hudLR.setVisible(true);
+            this.hudLR.anims.play("HUD-WarningLR");
+        }
+        if (enemy.y > player.y) {
+            this.hudUD.setFlipY(false);
+            this.hudUD.setVisible(true);
+            this.hudUD.anims.play("HUD-WarningUD");
+        }
+        if (enemy.y < player.y) {
+            this.hudUD.setFlipY(true);
+            this.hudUD.setVisible(true);
+            this.hudUD.anims.play("HUD-WarningUD");
+        }
+    }
+
+    hudGateLocation(player) {
+        if (player.x < this.gate.x) {
+            this.hudGateLR.setFlipX(true);
+            this.hudGateLR.setTint("0x10E9E3");
+            this.hudGateLR.setVisible(true);
+            this.hudGateLR.anims.play("HUD-WarningLR");
+        }
+        if (player.x > this.gate.x) {
+            this.hudGateLR.setFlipX(false);
+            this.hudGateLR.setTint("0x10E9E3");
+            this.hudGateLR.setVisible(true);
+            this.hudGateLR.anims.play("HUD-WarningLR");
+        }
+        if (player.y < this.gate.y) {
+            this.hudGateUD.setFlipY(false);
+            this.hudGateUD.setTint("0x10E9E3");
+            this.hudGateUD.setVisible(true);
+            this.hudGateUD.anims.play("HUD-WarningUD");
+        }
+        if (player.y > this.gate.y) {
+            this.hudGateUD.setFlipY(true);
+            this.hudGateUD.setTint("0x10E9E3");
+            this.hudGateUD.setVisible(true);
+            this.hudGateUD.anims.play("HUD-WarningUD");
+        }
     }
 
     lose(enemies, enemy, player) {

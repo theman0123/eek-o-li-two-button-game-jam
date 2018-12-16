@@ -4,15 +4,15 @@ export default {
     type: Phaser.AUTO,
     parent: "two-button-jam",
     canvas: document.getElementById("game"),
-    width: 800, // window.innerWidth
-    height: 600, // window.innerHeight
+    width: window.innerWidth,
+    height: window.innerHeight,
     pixelArt: true,
     roundPixels: true,
     physics: {
         default: "matter",
         matter: {
             gravity: { scale: 0 },
-            debug: true,
+            // debug: true,
         },
         plugins: {
             attractors: true,

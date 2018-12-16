@@ -1,6 +1,8 @@
 import "phaser";
 import HUD from "../Sprites/HUD";
 
+// phaser may have a bug with multiple scenes and matter.js
+// could not get sprite.anims working and moved it to Game.js
 export default class HUDScene extends Phaser.Scene {
     constructor() {
         super({ key: "HUD", active: true });
@@ -16,7 +18,6 @@ export default class HUDScene extends Phaser.Scene {
 
         // get info
         this.gameScene.events.on("info", info => {
-            console.log(info, this);
             // create level text
             this.level = this.add.text(25, 25, `Level: ${info.level}`, {
                 fontSize: "52px",

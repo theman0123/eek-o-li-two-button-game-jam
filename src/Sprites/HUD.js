@@ -21,7 +21,5 @@ export default class HUD extends Phaser.GameObjects.Sprite {
         this.setOrigin(1);
         // set invisible
         this.setVisible(false);
-
-        // this.play("HUD-Warning");
     }
 }

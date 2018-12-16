@@ -73,8 +73,7 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
     dispatchLocation() {}
 
     executeMovement(scene) {
-        let velocity;
-        this.avoid ? (velocity = 5) : (velocity = 2.2);
+        let velocity = this.avoid ? 5 : 2.2;
 
         // honing movement
         if (this.directionToPlayer.up === true) {
