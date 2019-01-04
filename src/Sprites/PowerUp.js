@@ -20,7 +20,7 @@ export default class PowerUp extends Phaser.Physics.Matter.Image {
 
     activatePowerUp(player, powerup, scene) {
         // dispatch powerup-activated event
-        scene.events.emit("powerupActivated", (scene, player), this.scene);
+        scene.events.emit("powerupActivated", player);
         // this.remove(powerup);
         powerup.destroy();
     }

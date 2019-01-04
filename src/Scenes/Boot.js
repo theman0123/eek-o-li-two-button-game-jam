@@ -7,27 +7,27 @@ export default class BootScene extends Phaser.Scene {
 
     preload() {
         // load in the spritesheet
-        this.load.spritesheet("eek", "assets/tex/eek.png", {
+        this.load.spritesheet("eek", "assets/eek.png", {
             frameWidth: 32,
             frameHeight: 32,
         });
-        this.load.spritesheet("eek-tumble", "assets/tex/eek-tumble.png", {
+        this.load.spritesheet("eek-tumble", "assets/eek-tumble.png", {
             frameWidth: 32,
             frameHeight: 32,
         });
-        this.load.spritesheet("gate", "assets/tex/gate.png", {
+        this.load.spritesheet("gate", "assets/gate.png", {
             frameWidth: 32,
             frameHeight: 32,
         });
-        this.load.spritesheet("enemy", "assets/tex/enemy.png", {
+        this.load.spritesheet("enemy", "assets/enemy.png", {
             frameWidth: 32,
             frameHeight: 32,
         });
-        this.load.spritesheet("HUD", "assets/tex/HUD.png", {
+        this.load.spritesheet("HUD", "assets/HUD.png", {
             frameWidth: 32,
             frameHeight: 32,
         });
-        this.load.image("power-up", "assets/tex/power-up.png");
+        this.load.image("power-up", "assets/power-up.png");
     }
 
     // ALPHABETICAL BY METHOD
