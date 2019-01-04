@@ -49,9 +49,9 @@ export default class GameScene extends Phaser.Scene {
             objectB: this.powerUpsGroup.getChildren(),
             callback: eventData => {
                 eventData.gameObjectB.activatePowerUp(
-                    this.player,
-                    eventData.gameObjectB,
-                    this,
+                    this.player, // player
+                    eventData.gameObjectB, // power up
+                    this, // scene
                 );
             },
         });
@@ -83,13 +83,21 @@ export default class GameScene extends Phaser.Scene {
             this.player,
             this.info.powerUps,
         );
+        // call avoid function on enemies for powerup
+        this.events.on("powerupActivated", player => {
+            let enemyArray = this.enemies.getChildren();
+            enemyArray.forEach(enemy => {
+                enemy.avoidPlayer(player);
+                enemy.executeMovement(this);
+            });
+        });
 
         // HUD
         this.hudLR = new HUD(this);
         this.hudUD = new HUD(this);
 
-        this.events.on("enemyLocationToHUD", (player, enemy) => {
-            this.hudEnemyLocation(enemy, player);
+        this.events.on("enemyLocationToHUD", enemy => {
+            this.hudEnemyLocation(enemy, this.player);
         });
 
         // hud for gate location

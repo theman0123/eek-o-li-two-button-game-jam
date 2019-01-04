@@ -1,8 +1,9 @@
 import "phaser";
 
 export default class Enemy extends Phaser.Physics.Matter.Sprite {
-    constructor(world, x, y) {
+    constructor(world, x, y, scene) {
         super(world, x, y, "enemy");
+        this.scene = scene;
         // add our enemy to the scene
         this.scene.add.existing(this);
         // fix bounding box
@@ -21,26 +22,17 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
         // powerups when activated change this (see this.executeMovement)
         this.avoid = false;
 
-        this.scene.events.on(
-            "playerPosition",
-            (scene, player) => {
-                this.calculateMovement(player);
-                this.executeMovement(scene);
-            },
-            this,
-        );
-        this.scene.events.on(
-            "powerupActivated",
-            (scene, player) => {
-                this.avoidPlayer(player, this);
-                this.executeMovement(scene);
-            },
-            this,
-        );
-
+        // this.scene.events.on("powerupActivated", (player, scene) => {
+        //     // debugger;
+        //     // wrong 'this' context
+        //     this.avoidPlayer(player);
+        //     this.executeMovement(scene);
+        // });
         // alert location to HUD
-        this.scene.events.on("requestEnemyLocation", player => {
-            this.scene.events.emit("enemyLocationToHUD", (this, player), this);
+        this.scene.input.on("pointerup", () => {
+            this.scene.events.emit("enemyLocationToHUD", this);
+            this.calculateMovement(this.scene.player);
+            this.executeMovement(scene);
         });
     }
     // powerup activated: run away from player
@@ -92,4 +84,12 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
         }
         this.avoid = false;
     }
+
+    // emitLocationToHUD(player) {
+    //     // this.scene = this.world.scene;
+    //     console.log("this", this);
+    //     console.log("this:xy", this.x, this.y);
+    //     // must set reference to scene
+    //     // must pass this as context for emit (or 'this' becomes undefined as an argument)
+    // }
 }
