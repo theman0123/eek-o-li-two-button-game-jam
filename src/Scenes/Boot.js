@@ -28,6 +28,9 @@ export default class BootScene extends Phaser.Scene {
             frameHeight: 32,
         });
         this.load.image("power-up", "assets/power-up.png");
+        this.load.audio("main-theme", "assets/main-theme.mp3");
+        this.load.audio("game-lose", "assets/game-lose.mp3");
+        this.load.audio("level-win", "assets/level-win.mp3");
     }
 
     // ALPHABETICAL BY METHOD
@@ -102,7 +105,7 @@ export default class BootScene extends Phaser.Scene {
         this.anims.create({
             key: "HUD-WarningLR",
             frames: this.anims.generateFrameNames("HUD", {
-                frames: [3, 4, 5],
+                frames: [3, 4],
             }),
             frameRate: 4,
             yoyo: false,
@@ -110,7 +113,7 @@ export default class BootScene extends Phaser.Scene {
         this.anims.create({
             key: "HUD-WarningUD",
             frames: this.anims.generateFrameNames("HUD", {
-                frames: [6, 7, 8],
+                frames: [6, 7],
             }),
             frameRate: 4,
             yoyo: false,
@@ -119,14 +122,18 @@ export default class BootScene extends Phaser.Scene {
         this.scene.start("Game", {
             level: 0,
             powerUps: {
-                num: 3,
+                num: 2,
                 maxStartDistance: 200,
                 minStartDistance: 50,
             },
             enemies: {
-                num: 3,
+                num: 1,
                 maxStartDistance: 500,
                 minStartDistance: 200,
+            },
+            bounds: {
+                width: 800,
+                height: 800,
             },
         });
     }

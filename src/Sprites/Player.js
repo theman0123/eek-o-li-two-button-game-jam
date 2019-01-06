@@ -5,6 +5,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         super(world, x, y, "eek-tumble");
         this.scene = scene;
         this.move = false;
+        this.airFriction = 0.05;
         // is alive?
         this.isAlive = true;
         //  add our player to the scene
@@ -61,6 +62,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     // move eek
     moveEek() {
         // handle body physics
+        this.setFrictionAir(0);
         this.thrust(0.025);
         this.thrustLeft(0.123);
         // check speed for when eek slows to a crawl
@@ -89,7 +91,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     }
     // handle body to create tumble physics
     tumble() {
-        this.setFriction(10);
-        !this.move ? this.setAngle(this.angle + 88) : null;
+        this.setFrictionAir(this.airFriction);
+        !this.move ? this.setAngle(this.angle + 68) : null;
     }
 }

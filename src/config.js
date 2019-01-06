@@ -12,7 +12,7 @@ export default {
         default: "matter",
         matter: {
             gravity: { scale: 0 },
-            // debug: true,
+            debug: true,
         },
         plugins: {
             attractors: true,

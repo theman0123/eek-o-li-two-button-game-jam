@@ -1,3 +1,9 @@
+# Credits
+
+-   piskelapp.com - free pixel graphic editor
+-   mickleness - game-win sound on freesound.org
+-   josepharaoh99 - game-lose sound on freesound.org
+
 # notes on phaser
 
 # Gotchyas
