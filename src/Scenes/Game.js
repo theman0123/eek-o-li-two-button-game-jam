@@ -4,6 +4,7 @@ import Gate from "../Sprites/Gate";
 import EnemiesGroup from "../Groups/EnemiesGroup";
 import PowerUps from "../Groups/PowerUpsGroup";
 import HUD from "../Sprites/HUD";
+import { castDie } from "../utils";
 
 export default class GameScene extends Phaser.Scene {
     constructor(key) {
@@ -12,9 +13,26 @@ export default class GameScene extends Phaser.Scene {
 
     init(info) {
         this.info = info;
-        // to do: fix restart issues with context and change level info
-        this.info.level === 0 ? this.info.level++ : this.info.level++;
+        this.info.level++;
+        // ensure correct restart
         this.loadingLevel = false;
+        // adjust difficulty
+        // size = larger
+        this.info.bounds.width += 400;
+        this.info.bounds.height += 200;
+        // less powerups
+        this.info.powerUps.num += 2;
+        // more enemies
+        this.info.enemies.num += 2;
+        // randomly move the gate
+        this.info.gateLocation =
+            this.info.level > 2
+                ? {
+                      x: castDie(this.info.bounds.width),
+                      y: castDie(this.info.bounds.height),
+                  }
+                : { x: 200, y: 400 };
+
         this.events.emit("info", this.info);
     }
 
@@ -58,11 +76,52 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.matter.world.setBounds(0, 0, 2400, 2400, 115);
+        // set world bounds
+        this.matter.world.setBounds(
+            0,
+            0,
+            this.info.bounds.width,
+            this.info.bounds.height,
+            115,
+        );
+        // highlight bounds
+        // inner boundary
+        this.innerBoundary = new Phaser.Geom.Rectangle(
+            0,
+            0,
+            this.info.bounds.width,
+            this.info.bounds.height,
+        );
+        this.outerBoundary = new Phaser.Geom.Rectangle(
+            -10,
+            -10,
+            this.info.bounds.width + 20,
+            this.info.bounds.height + 20,
+        );
+
+        this.innerBorderOutline = this.add
+            .graphics({
+                fillStyle: { color: 0x030963 },
+            })
+            .setDepth(0);
+        // 5E6161
+        this.outerBorderOutline = this.add
+            .graphics({
+                fillStyle: { color: 0x5ce1d8 },
+            })
+            .setDepth(-1);
+        this.innerBorderOutline.fillRectShape(this.innerBoundary);
+        this.outerBorderOutline.fillRectShape(this.outerBoundary);
+
         // listen for resize events
         this.events.on("resize", this.resize, this);
         // create Player
-        this.player = new Player(this.matter.world, 300, 350, this);
+        this.player = new Player(
+            this.matter.world,
+            this.info.bounds.width / 2,
+            this.info.bounds.height / 2,
+            this,
+        );
 
         // enemy
         this.enemies = new EnemiesGroup(
@@ -73,7 +132,12 @@ export default class GameScene extends Phaser.Scene {
         );
 
         // gate
-        this.gate = new Gate(this.matter.world, 300, 100, "gate");
+        this.gate = new Gate(
+            this.matter.world,
+            this.info.gateLocation.x,
+            this.info.gateLocation.y,
+            "gate",
+        );
 
         // create power-ups group
         // this.powerup = new PowerUp(this.matter.world, this, 250, 300);
@@ -104,7 +168,7 @@ export default class GameScene extends Phaser.Scene {
         this.hudGateLR = new HUD(this);
         this.hudGateUD = new HUD(this);
         this.events.on("gateSense", player => {
-            // logic for executing gate
+            // logic for executing gateSense
             this.hudGateLocation(player);
         });
 
@@ -112,6 +176,8 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.startFollow(this.player);
 
         this.addCollisions();
+        // start music
+        this.sound.play("main-theme");
     }
 
     hudEnemyLocation(enemy, player) {
@@ -120,6 +186,8 @@ export default class GameScene extends Phaser.Scene {
             500
                 ? "HIGH_ALERT"
                 : "LOW_ALERT";
+        this.hudLR.setTint(0xfc1026);
+        this.hudUD.setTint(0xfc1026);
         if (enemy.x > player.x) {
             this.hudLR.setFlipX(true);
             this.hudLR.setVisible(true);
@@ -145,25 +213,25 @@ export default class GameScene extends Phaser.Scene {
     hudGateLocation(player) {
         if (player.x < this.gate.x) {
             this.hudGateLR.setFlipX(true);
-            this.hudGateLR.setTint("0x10E9E3");
+            this.hudGateLR.setTint("0x0013FF");
             this.hudGateLR.setVisible(true);
             this.hudGateLR.anims.play("HUD-WarningLR");
         }
         if (player.x > this.gate.x) {
             this.hudGateLR.setFlipX(false);
-            this.hudGateLR.setTint("0x10E9E3");
+            this.hudGateLR.setTint("0x0013FF");
             this.hudGateLR.setVisible(true);
             this.hudGateLR.anims.play("HUD-WarningLR");
         }
         if (player.y < this.gate.y) {
             this.hudGateUD.setFlipY(false);
-            this.hudGateUD.setTint("0x10E9E3");
+            this.hudGateUD.setTint("0x0013FF");
             this.hudGateUD.setVisible(true);
             this.hudGateUD.anims.play("HUD-WarningUD");
         }
         if (player.y > this.gate.y) {
             this.hudGateUD.setFlipY(true);
-            this.hudGateUD.setTint("0x10E9E3");
+            this.hudGateUD.setTint("0x0013FF");
             this.hudGateUD.setVisible(true);
             this.hudGateUD.anims.play("HUD-WarningUD");
         }
@@ -172,8 +240,26 @@ export default class GameScene extends Phaser.Scene {
     lose(enemies, enemy, player) {
         player.isAlive = false;
         player.setVisible(false);
+        // remove matter body from scene
+        this.matter.world.remove(this.player);
+        // remove listeners?
+        // remove sound
+        this.sound.stopAll();
+        // play lose sound
+        this.sound.play("game-lose");
+        // code here
         this.cameras.main.startFollow(enemy);
         enemy.anims.play("eek-lose");
+        this.cameras.main.fade(1500, 0, 0, 0);
+        this.cameras.main.on(
+            "camerafadeoutcomplete",
+            () => {
+                this.scene.restart(this.info);
+            },
+            this,
+        );
+
+        this.loadingLevel = true;
     }
 
     resize(width, height) {
@@ -185,13 +271,21 @@ export default class GameScene extends Phaser.Scene {
         }
         this.cameras.resize(width, height);
     }
-
+    // win
     restart() {
         if (!this.loadingLevel) {
+            // adjust camera
             this.cameras.main.startFollow(this.gate);
+            // remove player from scene
             this.player.setVisible(false);
+            this.matter.world.remove(this.player);
+            // play win animation
             this.gate.anims.stop("flash");
             this.gate.anims.play("levelWin");
+            // stop sounds/music
+            this.sound.stopAll();
+            // play win sound
+            this.sound.play("level-win");
             this.cameras.main.fade(1500, 0, 0, 0);
             this.cameras.main.on(
                 "camerafadeoutcomplete",
