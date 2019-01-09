@@ -22,6 +22,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.setOrigin(0.5, 0.65);
         // change friction
         this.setFriction(5);
+        this.setFrictionAir(0.005);
         // play animation
         this.play("tumble");
 
@@ -30,8 +31,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.scene.input.on("pointerdown", () => {
             if (this.isAlive) {
                 this.move = false;
-                this.scene.time.addEvent({
-                    delay: 150,
+                this.setTimerTumble = this.scene.time.addEvent({
+                    delay: 100,
                     callback: this.tumble,
                     repeat: -1,
                     callbackScope: this,
@@ -62,17 +63,19 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     // move eek
     moveEek() {
         // handle body physics
-        this.setFrictionAir(0);
+        this.setFrictionAir(0.005);
         this.thrust(0.025);
         this.thrustLeft(0.123);
         // check speed for when eek slows to a crawl
         this.speedTracker = this.scene.time.addEvent({
             delay: 1000,
             callback: () => {
-                if (this.body.speed <= 1) {
+                if (this.body.speed <= 3) {
                     this.move = false;
                     this.scene.events.emit("killSpeedTracker", this);
                     this.handleAnims();
+                    // execute tumble (once) to apply friction
+                    this.tumble();
                 }
             },
             repeat: -1,
@@ -92,6 +95,6 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     // handle body to create tumble physics
     tumble() {
         this.setFrictionAir(this.airFriction);
-        !this.move ? this.setAngle(this.angle + 68) : null;
+        !this.move ? this.setAngle(this.angle + 30) : null;
     }
 }
