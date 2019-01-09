@@ -22,12 +22,6 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
         // powerups when activated change this (see this.executeMovement)
         this.avoid = false;
 
-        // this.scene.events.on("powerupActivated", (player, scene) => {
-        //     // debugger;
-        //     // wrong 'this' context
-        //     this.avoidPlayer(player);
-        //     this.executeMovement(scene);
-        // });
         // alert location to HUD
         this.scene.input.on("pointerup", () => {
             this.scene.events.emit("enemyLocationToHUD", this);
@@ -37,13 +31,13 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
     }
     // powerup activated: run away from player
     avoidPlayer(player) {
+        this.avoid = true;
         this.directionToPlayer = {
             up: !(this.y > player.y),
             down: !(this.y < player.y),
             left: !(this.x > player.x),
             right: !(this.x < player.x),
         };
-        this.avoid = true;
     }
 
     // to make it work on restart : this
@@ -61,8 +55,6 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
             right: this.x < player.x,
         };
     }
-
-    dispatchLocation() {}
 
     executeMovement(scene) {
         let velocity = this.avoid ? 5 : 2.2;
@@ -84,12 +76,4 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
         }
         this.avoid = false;
     }
-
-    // emitLocationToHUD(player) {
-    //     // this.scene = this.world.scene;
-    //     console.log("this", this);
-    //     console.log("this:xy", this.x, this.y);
-    //     // must set reference to scene
-    //     // must pass this as context for emit (or 'this' becomes undefined as an argument)
-    // }
 }

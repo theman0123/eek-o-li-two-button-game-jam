@@ -9,16 +9,15 @@ export default class PowerUpsGroup extends Phaser.GameObjects.Group {
         this.info = info;
         this.maxSize = this.info.max;
 
-        // this.spreadOut();
         this.createPowerUps(world, player, info);
     }
 
     createPowerUps(world, player, info) {
-        for (let i = 0; i < info.num; i++) {
+        for (let i = 0; i < info.powerups.num; i++) {
             let powerup = new PowerUp(
                 world,
-                castDie(player.x + 3, player.x + 3),
-                castDie(player.y + 3, player.y + 3),
+                castDie(info.worldBounds.width, 0),
+                castDie(info.worldBounds.height, 0),
             );
             this.add(powerup);
         }

@@ -10,17 +10,11 @@ export default class EnemiesGroup extends Phaser.GameObjects.Group {
     }
     // create enemies using basic for loop
     createEnemies(world, player, info, scene) {
-        for (let i = 0; i < info.num; i++) {
+        for (let i = 0; i < info.enemies.num; i++) {
             let enemy = new Enemy(
                 world,
-                castDie(
-                    player.x + info.maxStartDistance,
-                    player.x + info.minStartDistance,
-                ),
-                castDie(
-                    player.y + info.maxStartDistance,
-                    player.y + info.minStartDistance,
-                ),
+                castDie(info.worldBounds.width, 0),
+                castDie(info.worldBounds.height, 0),
                 scene,
             );
             this.add(enemy);

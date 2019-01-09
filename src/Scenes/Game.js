@@ -52,6 +52,21 @@ export default class GameScene extends Phaser.Scene {
                 });
             },
         });
+        const { bottom, left, top, right } = this.matter.world.walls;
+        // gate collides with bounds
+        this.matterCollision.addOnCollideStart({
+            objectA: [bottom, left, right, top],
+            objectB: this.gate,
+            callback: eventData => {
+                if (eventData.gameObjectB.body.velocity.x > 0) {
+                    eventData.gameObjectB.setVelocityX(castDie(-1, -3));
+                    eventData.gameObjectB.setVelocityY(castDie(-1, -3));
+                } else {
+                    eventData.gameObjectB.setVelocityX(castDie(3, 1));
+                    eventData.gameObjectB.setVelocityY(castDie(3, 1));
+                }
+            },
+        });
 
         // level lose
         this.matterCollision.addOnCollideStart({
@@ -84,6 +99,8 @@ export default class GameScene extends Phaser.Scene {
             this.info.bounds.height,
             115,
         );
+
+        // refactor
         // highlight bounds
         // inner boundary
         this.innerBoundary = new Phaser.Geom.Rectangle(
@@ -124,12 +141,11 @@ export default class GameScene extends Phaser.Scene {
         );
 
         // enemy
-        this.enemies = new EnemiesGroup(
-            this.matter.world,
-            this,
-            this.player,
-            this.info.enemies,
-        );
+
+        this.enemies = new EnemiesGroup(this.matter.world, this, this.player, {
+            enemies: this.info.enemies,
+            worldBounds: this.info.bounds,
+        });
 
         // gate
         this.gate = new Gate(
@@ -137,15 +153,15 @@ export default class GameScene extends Phaser.Scene {
             this.info.gateLocation.x,
             this.info.gateLocation.y,
             "gate",
+            this.info.level,
         );
 
         // create power-ups group
-        // this.powerup = new PowerUp(this.matter.world, this, 250, 300);
         this.powerUpsGroup = new PowerUps(
             this.matter.world,
             this,
             this.player,
-            this.info.powerUps,
+            { powerups: this.info.powerUps, worldBounds: this.info.bounds },
         );
         // call avoid function on enemies for powerup
         this.events.on("powerupActivated", player => {
