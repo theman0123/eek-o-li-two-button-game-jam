@@ -1,11 +1,8 @@
 import "phaser";
-import { castDie } from "../utils";
 
 export default class PowerUp extends Phaser.Physics.Matter.Image {
     constructor(world, x, y) {
         super(world, x, y, "power-up");
-        // make scene available to all methods by placing it on 'this'
-        // this.scene = scene;
         this.originalX = this.x;
         this.originalY = this.y;
         // this.setInteractive(true);

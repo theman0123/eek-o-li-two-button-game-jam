@@ -3,20 +3,9 @@
 -   piskelapp.com - free pixel graphic editor
 -   mickleness - game-win sound on freesound.org
 -   josepharaoh99 - game-lose sound on freesound.org
+-   synthwave megadrive - main theme music found on Envato(audiojungle)
 
 # notes on phaser
-
-# Gotchyas
-
--   By default, if a Scene at the top of the scene list receives and handles a valid input request, then all of the Scenes below that one will just skip their input processing in order to save time. You can change this behavior by calling this.input.setGlobalTopOnly(false) from any Scene. Every Scene will then process input, regardless of its position in the scene list.
--   if the above comment includes event emitters, then it makes sense that all other emitters stop
-
-#notes on tweens
-
--   must have correct context (scene)
--   helpful to pass scene with events emitters
--   check if tween already exist and use if they do
--   stop all tweens and timed events when game objects are destroyed
 
 # to be removed
 

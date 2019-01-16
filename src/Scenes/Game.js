@@ -3,7 +3,6 @@ import Player from "../Sprites/Player";
 import Gate from "../Sprites/Gate";
 import EnemiesGroup from "../Groups/EnemiesGroup";
 import PowerUps from "../Groups/PowerUpsGroup";
-import HUD from "../Sprites/HUD";
 import { castDie } from "../utils";
 
 export default class GameScene extends Phaser.Scene {
@@ -13,7 +12,6 @@ export default class GameScene extends Phaser.Scene {
 
     init(info) {
         this.info = info;
-        this.info.level++;
         // ensure correct restart
         this.loadingLevel = false;
         // adjust difficulty
@@ -26,7 +24,7 @@ export default class GameScene extends Phaser.Scene {
         this.info.enemies.num += 2;
         // randomly move the gate
         this.info.gateLocation =
-            this.info.level > 2
+            this.info.level > 1
                 ? {
                       x: castDie(this.info.bounds.width),
                       y: castDie(this.info.bounds.height),
@@ -91,45 +89,9 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
-        // set world bounds
-        this.matter.world.setBounds(
-            0,
-            0,
-            this.info.bounds.width,
-            this.info.bounds.height,
-            115,
-        );
-
-        // refactor
-        // highlight bounds
-        // inner boundary
-        this.innerBoundary = new Phaser.Geom.Rectangle(
-            0,
-            0,
-            this.info.bounds.width,
-            this.info.bounds.height,
-        );
-        this.outerBoundary = new Phaser.Geom.Rectangle(
-            -10,
-            -10,
-            this.info.bounds.width + 20,
-            this.info.bounds.height + 20,
-        );
-
-        this.innerBorderOutline = this.add
-            .graphics({
-                fillStyle: { color: 0x030963 },
-            })
-            .setDepth(0);
-        // 5E6161
-        this.outerBorderOutline = this.add
-            .graphics({
-                fillStyle: { color: 0x5ce1d8 },
-            })
-            .setDepth(-1);
-        this.innerBorderOutline.fillRectShape(this.innerBoundary);
-        this.outerBorderOutline.fillRectShape(this.outerBoundary);
-
+        // handle world bounds
+        this.createWorldBounds();
+        this.createVisibleBounds();
         // listen for resize events
         this.events.on("resize", this.resize, this);
         // create Player
@@ -172,89 +134,63 @@ export default class GameScene extends Phaser.Scene {
             });
         });
 
-        // HUD
-        this.hudLR = new HUD(this);
-        this.hudUD = new HUD(this);
-
-        this.events.on("enemyLocationToHUD", enemy => {
-            this.hudEnemyLocation(enemy, this.player);
-        });
-
-        // hud for gate location
-        this.hudGateLR = new HUD(this);
-        this.hudGateUD = new HUD(this);
-        this.events.on("gateSense", player => {
-            // logic for executing gateSense
-            this.hudGateLocation(player);
-        });
-
         // update camera to follow this.player
         this.cameras.main.startFollow(this.player);
 
         this.addCollisions();
-        // start music
-        this.sound.play("main-theme");
     }
 
-    hudEnemyLocation(enemy, player) {
-        this.enemyAlertStatus =
-            Phaser.Math.Distance.Between(enemy.x, enemy.y, player.x, player.y) <
-            500
-                ? "HIGH_ALERT"
-                : "LOW_ALERT";
-        this.hudLR.setTint(0xfc1026);
-        this.hudUD.setTint(0xfc1026);
-        if (enemy.x > player.x) {
-            this.hudLR.setFlipX(true);
-            this.hudLR.setVisible(true);
-            this.hudLR.anims.play("HUD-WarningLR");
-        }
-        if (enemy.x < player.x) {
-            this.hudLR.setFlipX(false);
-            this.hudLR.setVisible(true);
-            this.hudLR.anims.play("HUD-WarningLR");
-        }
-        if (enemy.y > player.y) {
-            this.hudUD.setFlipY(false);
-            this.hudUD.setVisible(true);
-            this.hudUD.anims.play("HUD-WarningUD");
-        }
-        if (enemy.y < player.y) {
-            this.hudUD.setFlipY(true);
-            this.hudUD.setVisible(true);
-            this.hudUD.anims.play("HUD-WarningUD");
-        }
+    createWorldBounds() {
+        // set world bounds
+        this.matter.world.setBounds(
+            0,
+            0,
+            this.info.bounds.width,
+            this.info.bounds.height,
+            115,
+        );
     }
 
-    hudGateLocation(player) {
-        if (player.x < this.gate.x) {
-            this.hudGateLR.setFlipX(true);
-            this.hudGateLR.setTint("0x0013FF");
-            this.hudGateLR.setVisible(true);
-            this.hudGateLR.anims.play("HUD-WarningLR");
-        }
-        if (player.x > this.gate.x) {
-            this.hudGateLR.setFlipX(false);
-            this.hudGateLR.setTint("0x0013FF");
-            this.hudGateLR.setVisible(true);
-            this.hudGateLR.anims.play("HUD-WarningLR");
-        }
-        if (player.y < this.gate.y) {
-            this.hudGateUD.setFlipY(false);
-            this.hudGateUD.setTint("0x0013FF");
-            this.hudGateUD.setVisible(true);
-            this.hudGateUD.anims.play("HUD-WarningUD");
-        }
-        if (player.y > this.gate.y) {
-            this.hudGateUD.setFlipY(true);
-            this.hudGateUD.setTint("0x0013FF");
-            this.hudGateUD.setVisible(true);
-            this.hudGateUD.anims.play("HUD-WarningUD");
-        }
+    createVisibleBounds() {
+        this.innerBoundary = new Phaser.Geom.Rectangle(
+            0,
+            0,
+            this.info.bounds.width,
+            this.info.bounds.height,
+        );
+        this.outerBoundary = new Phaser.Geom.Rectangle(
+            -10,
+            -10,
+            this.info.bounds.width + 20,
+            this.info.bounds.height + 20,
+        );
+
+        this.innerBorderOutline = this.add.graphics();
+        this.innerBorderOutline
+            .fillGradientStyle(0x224769, 0x7693ae, 0xa53489, 0xa53489)
+            .setDepth(0);
+        this.outerBorderOutline = this.add
+            .graphics({
+                fillStyle: { color: 0x5ce1d8 },
+            })
+            .setDepth(-1);
+        this.innerBorderOutline.fillRectShape(this.innerBoundary);
+
+        this.outerBorderOutline.fillRectShape(this.outerBoundary);
     }
 
+    //handle hud scene
+    handleHUDScene() {
+        this.hudScene = this.scene.get("HUD");
+        // destroy HUD elements
+        if (!this.player.isAlive && this.info.player.lives <= 0) {
+            this.hudScene.gameOver();
+        } else this.hudScene.levelText.destroy();
+    }
+    // lose
     lose(enemies, enemy, player) {
         player.isAlive = false;
+        this.info.player.lives--;
         player.setVisible(false);
         // remove matter body from scene
         this.matter.world.remove(this.player);
@@ -266,16 +202,23 @@ export default class GameScene extends Phaser.Scene {
         // code here
         this.cameras.main.startFollow(enemy);
         enemy.anims.play("eek-lose");
-        this.cameras.main.fade(1500, 0, 0, 0);
+        this.cameras.main.fade(1600, 0, 0, 0);
         this.cameras.main.on(
             "camerafadeoutcomplete",
             () => {
-                this.scene.restart(this.info);
+                // check # of lives
+                if (this.info.player.lives > 0) {
+                    this.handleHUDScene();
+                    this.loadingLevel = true;
+                    this.scene.restart(this.info);
+                } else {
+                    // game over
+                    this.cameras.main.fadeIn(2000);
+                    this.handleHUDScene();
+                }
             },
             this,
         );
-
-        this.loadingLevel = true;
     }
 
     resize(width, height) {
@@ -302,16 +245,20 @@ export default class GameScene extends Phaser.Scene {
             this.sound.stopAll();
             // play win sound
             this.sound.play("level-win");
+            // level up!
+            this.info.level++;
             this.cameras.main.fade(1500, 0, 0, 0);
             this.cameras.main.on(
                 "camerafadeoutcomplete",
                 () => {
+                    this.loadingLevel = true;
+                    // handle HUD scene elements
+                    this.handleHUDScene();
                     this.scene.restart(this.info);
                 },
                 this,
             );
         }
-        this.loadingLevel = true;
     }
 
     update() {}

@@ -47,6 +47,9 @@ portfinder.getPort(function(err, finalPort) {
     const server = new WebpackDevServer(compiler, {
         stats: {
             colors: true,
+            errors: true,
+            errorDetails: true,
+            modules: false,
         },
     });
     server.listen(finalPort, null, function() {
