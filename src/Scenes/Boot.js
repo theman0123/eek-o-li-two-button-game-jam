@@ -27,6 +27,10 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 32,
         });
+        this.load.spritesheet("mute-button", "assets/Mute(64x64).png", {
+            frameWidth: 64,
+            frameHeight: 64,
+        });
         this.load.image("power-up", "assets/power-up.png");
         this.load.audio("main-theme", "assets/main-theme.mp3");
         this.load.audio("game-lose", "assets/game-lose.mp3");
@@ -107,16 +111,18 @@ export default class BootScene extends Phaser.Scene {
             frames: this.anims.generateFrameNames("HUD", {
                 frames: [3, 4],
             }),
-            frameRate: 4,
+            frameRate: 2,
             yoyo: false,
+            hideOnComplete: true,
         });
         this.anims.create({
             key: "HUD-WarningUD",
             frames: this.anims.generateFrameNames("HUD", {
                 frames: [6, 7],
             }),
-            frameRate: 4,
+            frameRate: 2,
             yoyo: false,
+            hideOnComplete: true,
         });
         // start game
         this.scene.start("Game", {
@@ -135,6 +141,9 @@ export default class BootScene extends Phaser.Scene {
                 width: 800,
                 height: 800,
             },
+            player: {
+                lives: 2,
+            }
         });
     }
 }

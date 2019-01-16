@@ -22,6 +22,6 @@ export default class HUD extends Phaser.GameObjects.Sprite {
         // set invisible
         this.setVisible(false);
         // make sensors see through
-        this.setAlpha(0.8);
+        this.setAlpha(0.4);
     }
 }
