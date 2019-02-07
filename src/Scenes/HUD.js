@@ -69,6 +69,7 @@ export default class HUDScene extends Phaser.Scene {
         if (this.livesGraphic) {
             this.livesGraphic.clear(true, true);
         }
+        // create level text
         this.levelText = this.add
             .text(25, 25, `Level: ${info.level}`, {
                 fontSize: "52px",
@@ -78,7 +79,6 @@ export default class HUDScene extends Phaser.Scene {
             })
             .setAlpha(0.7)
             .setDepth(1);
-        // create level text
         // level text dimensions for easy access
         const { x, y, width, height } = this.levelText;
 
