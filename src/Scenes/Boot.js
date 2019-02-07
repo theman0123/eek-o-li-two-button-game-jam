@@ -5,6 +5,11 @@ export default class BootScene extends Phaser.Scene {
         super(key);
     }
 
+    init() {
+        this.width = this.cameras.main.width;
+        this.height = this.cameras.main.height;
+    }
+
     preload() {
         // load in the spritesheet
         this.load.spritesheet("eek", "assets/eek.png", {
@@ -31,6 +36,12 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 64,
             frameHeight: 64,
         });
+        this.load.spritesheet("title-banner", "assets/eek-title-screen.png", {
+            frameWidth: 75,
+            frameHeight: 100,
+        });
+
+        // this.load.image("title-banner", "assets/eek-title-screen.png");
         this.load.image("power-up", "assets/power-up.png");
         this.load.audio("main-theme", "assets/main-theme.mp3");
         this.load.audio("game-lose", "assets/game-lose.mp3");
@@ -39,8 +50,131 @@ export default class BootScene extends Phaser.Scene {
 
     // ALPHABETICAL BY METHOD
 
+    centerObject(gameObject, offset = 0) {
+        gameObject.x = this.width / 2;
+        gameObject.y = this.height / 2 + 200;
+    }
+
     create() {
-        // Animations
+        // title background
+        this.background = this.add
+            .sprite(this.width / 2, this.height / 2, "title-banner", 0)
+            .setDisplaySize(300, 500);
+        // enemy
+        this.enemy = this.add.sprite(
+            this.width / 2 - this.background.displayWidth / 2 + 50,
+
+            this.height / 2 + this.background.displayHeight / 2 - 50,
+            "title-banner",
+            2,
+        );
+        // eek
+        this.eek = this.add
+            .sprite(
+                this.width / 2 + this.background.displayWidth / 2 - 50,
+                this.height / 2 + this.background.displayHeight / 2 - 50,
+                "title-banner",
+                3,
+            )
+            .setScale(2);
+
+        // Text
+        // EEK!
+        this.titleText = this.add
+            .text(this.width / 2, 100, "EEK!", {
+                fontSize: "60px",
+                fill: "#d8a6cc",
+                strokeThickness: 5,
+            })
+            .setDepth(1)
+            .setAlpha(0);
+        // loading...
+        this.loadingText = this.add
+            .text(this.width / 2, 170, "Loading...", {
+                fontSize: "25px",
+                fill: "#ffffff",
+                strokeThickness: 2,
+            })
+            .setDepth(1)
+            .setAlpha(0.7);
+        // show files loading TODO
+
+        // tap to play!
+        this.tapToPlayText = this.add
+            .text(
+                this.width / 2 - this.background.displayWidth / 2,
+                this.height - 150,
+                "Tap To Play!",
+                {
+                    fontSize: "40px",
+                    fill: "#d8a6cc",
+                    strokeThickness: 5,
+                },
+            )
+            .setDepth(1);
+
+        // TWEENS
+        // text
+        this.textAlphaTween = this.tweens.add({
+            targets: this.titleText,
+            duration: 5000,
+            repeat: 0,
+            alpha: 1,
+        });
+        // enemy movement
+        this.enemyTweenMovement = this.tweens.add({
+            targets: this.enemy,
+            x: this.width / 2, // '+=100'
+            y: this.background.displayHeight / 2, // '+=100'
+            ease: "Power2", // 'Cubic', 'Elastic', 'Bounce', 'Back', 'Linear, 'Sine', 'Ease'
+            duration: 3000,
+            repeat: -1, // -1: infinity
+            yoyo: true,
+        });
+        this.enemyTweenSize = this.tweens.add({
+            targets: this.enemy,
+            scaleX: 2,
+            scaleY: 2,
+            ease: "Power2", // 'Cubic', 'Elastic', 'Bounce', 'Back', 'Linear, 'Sine', 'Ease'
+            duration: 3000,
+            repeat: -1, // -1: infinity
+            yoyo: true,
+        });
+        // eek movement
+        this.eekTweenMovement = this.tweens.add({
+            targets: this.eek,
+            x: this.width / 2 - this.background.displayWidth / 2, // '+=100'
+            y: this.height / 2 - this.background.displayHeight / 2, // '+=100'
+            ease: "Power2", // 'Cubic', 'Elastic', 'Bounce', 'Back', 'Linear, 'Sine', 'Ease'
+            duration: 3000,
+            repeat: -1, // -1: infinity
+            yoyo: true,
+        });
+        this.eekTweenSize = this.tweens.add({
+            targets: this.eek,
+            scaleX: 0.5,
+            scaleY: 0.5,
+            ease: "Power2", // 'Cubic', 'Elastic', 'Bounce', 'Back', 'Linear, 'Sine', 'Ease'
+            duration: 3000,
+            repeat: -1, // -1: infinity
+            yoyo: true,
+        });
+        this.eekTweenTwist = this.tweens.add({
+            targets: this.eek,
+            rotation: 2,
+            ease: "Linear",
+            duration: 3000,
+            repeat: -1,
+            yoyo: true,
+        });
+        this.eekTweenAlpha = this.tweens.add({
+            targets: this.eek,
+            alpha: 0,
+            duration: 3000,
+            repeat: -1,
+            yoyo: true,
+        });
+        // ANIMATIONS
 
         // motor engaged animation
         this.anims.create({
@@ -125,25 +259,25 @@ export default class BootScene extends Phaser.Scene {
             hideOnComplete: true,
         });
         // start game
-        this.scene.start("Game", {
-            level: 0,
-            powerUps: {
-                num: 2,
-                maxStartDistance: 200,
-                minStartDistance: 50,
-            },
-            enemies: {
-                num: 1,
-                maxStartDistance: 500,
-                minStartDistance: 200,
-            },
-            bounds: {
-                width: 800,
-                height: 800,
-            },
-            player: {
-                lives: 2,
-            }
-        });
+        // this.scene.start("Game", {
+        //     level: 0,
+        //     powerUps: {
+        //         num: 2,
+        //         maxStartDistance: 200,
+        //         minStartDistance: 50,
+        //     },
+        //     enemies: {
+        //         num: 1,
+        //         maxStartDistance: 500,
+        //         minStartDistance: 200,
+        //     },
+        //     bounds: {
+        //         width: 800,
+        //         height: 800,
+        //     },
+        //     player: {
+        //         lives: 2,
+        //     },
+        // });
     }
 }
