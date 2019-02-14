@@ -1,3 +1,5 @@
+An HTML5 web game using Phaser3 and modern javascript es6 classes.
+
 # Credits
 
 -   piskelapp.com - free pixel graphic editor
@@ -5,43 +7,25 @@
 -   josepharaoh99 - game-lose sound on freesound.org
 -   synthwave megadrive - main theme music found on Envato(audiojungle)
 
-# notes on phaser
+# Description
 
-# to be removed
+You are Eek, a little e-coli cell trying to survive!!
 
--   preloader
--   game scales
+## INSTRUCTIONS FOR MOVING:
 
-# Phaser 3 template (ES5)
+Tap and hold anywhere to rotate (tumbling). Release finger to move.
 
-Very basic template project for game development with Phaser 3.
+## ENEMY MOVEMENT:
 
-## Feature
+red 'enemies' are equipped with 'lazy tracking' and can sense when you move!
 
--   dev server with live-reload
--   build
--   webpack
--   `SHOW_ALL` and `RESIZE` scale mode
--   simple preloader scene
+## SENSORS:
 
-## How to run
+blue sensors on heads up display describe where the gate is located;
 
-### Using yarn
+red sensors describe where enemies are located.
 
--   Prepare: `yarn install`
--   Development: `yarn start`
--   Build: `yarn build`
 
-### Using NPM
 
--   Prepare: `npm install`
--   Development: `npm run start`
--   Build: `npm run build`
-
-## Folders
-
--   assets: raw assets, you can put images and texture packer files here, export atlas to `media` folder
-    -   tex: textures should be placed here, which will be included
-        in the `tex.tps` atlas
--   media: image, atlas, sound and whatever you need to ship with the final game
--   src: source code locates here, `main.js` is the entry
+## MISC:
+~started for two-button game jam in Dec 2018~
