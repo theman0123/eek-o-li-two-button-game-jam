@@ -33,7 +33,7 @@ export default class HUDScene extends Phaser.Scene {
                 loop: true,
                 delay: 1,
             });
-            // create/handle mute button
+            // create and handle mute button
             this.handleMute();
             // HUD enemy
             this.gameScene.events.on("enemyLocationToHUD", enemy => {
@@ -44,7 +44,52 @@ export default class HUDScene extends Phaser.Scene {
                 // logic for executing gateSense
                 this.hudGateLocation(player);
             });
+
+            // create Game Start Text
+            this.createGameStartText();
+
+            // set timer for game start
+            this.gameStartsInTimer = this.time.addEvent({
+                delay: 1000,
+                callback: () => {
+                    this.gameCountDownText.setText(
+                        `${this.gameStartsInTimer.getRepeatCount()}`,
+                    );
+                    if (this.gameStartsInTimer.getRepeatCount() === 0) {
+                        this.removeTextElements();
+                        this.gameScene.player.isAlive = true;
+                    }
+                },
+                repeat: 2,
+            });
         });
+    }
+
+    createGameStartText() {
+        // 'ready' text
+        this.gameStartText = this.add.text(
+            this.game.config.width / 2 - 100,
+            this.game.config.height / 2 - 100,
+            "Ready: ",
+            {
+                fontFamily: "Arial",
+                fontSize: "56px",
+                color: "#fff",
+                strokeThickness: 3,
+            },
+        );
+        // countdown number
+        this.gameCountDownText = this.add.text(
+            this.game.config.width / 2 - 50,
+            this.game.config.height / 2 - 50,
+            "",
+            {
+                fontFamily: "Arial",
+                fontSize: "70px",
+                color: "#fff",
+                strokeThickness: 3,
+            },
+        );
     }
 
     // create HUD
@@ -67,7 +112,9 @@ export default class HUDScene extends Phaser.Scene {
     handleGraphics(info) {
         // clear lives Graphic
         if (this.livesGraphic) {
-            this.livesGraphic.clear(true, true);
+            if (this.livesGraphic.children != undefined) {
+                this.livesGraphic.clear(true, true);
+            }
         }
         // create level text
         this.levelText = this.add
@@ -174,16 +221,51 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     gameOver() {
-        this.gameOver = this.add.text(
-            this.gameScene.cameras.main.centerX / 2,
+        this.gameOverText = this.add.text(
+            this.gameScene.cameras.main.centerX,
             this.gameScene.cameras.main.centerY / 2,
             `GAME OVER`,
             {
-                fontSize: "152px",
+                fontSize: "70px",
                 fill: "#E8EFEE",
                 backgroundColor: "#ca3542",
-                strokeThickness: 4,
+                strokeThickness: 3,
             },
         );
+        // in order to center 'game over' it had to be created first^^
+        this.gameOverText.setX(
+            this.gameScene.cameras.main.centerX - this.gameOverText.width / 2,
+        );
+        // try again text
+        this.tryAgainText = this.add.text(
+            this.gameScene.cameras.main.centerX,
+            this.gameScene.cameras.main.centerY,
+            "Try Again?",
+            {
+                fontSize: "40px",
+                fill: "#E8EFEE",
+                backgroundColor: "#ca3542",
+                strokeThickness: 2,
+            },
+        );
+        this.tryAgainText.setX(
+            this.gameScene.cameras.main.centerX - this.tryAgainText.width / 2,
+        );
+        // create restart button
+        this.restartButton = this.add.image(
+            this.gameScene.cameras.main.centerX,
+            this.gameScene.cameras.main.centerY +
+                this.gameScene.cameras.main.centerY / 4,
+            "button-yes",
+        );
+        this.restartButton.setScale(4);
+        this.restartButton.setInteractive();
+        this.restartButton.on("pointerdown", () => {
+            this.gameScene.restart();
+        });
+    }
+    removeTextElements() {
+        this.gameStartText.destroy();
+        this.gameCountDownText.destroy();
     }
 }

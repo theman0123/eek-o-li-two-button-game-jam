@@ -101,6 +101,7 @@ export default class GameScene extends Phaser.Scene {
             this.info.bounds.height / 2,
             this,
         );
+        this.player.isAlive = false;
 
         // enemy
 
@@ -138,6 +139,9 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.startFollow(this.player);
 
         this.addCollisions();
+
+        // remove later
+        // this.lose(this.enemies, this.enemies.getChildren()[0], this.player);
     }
 
     createWorldBounds() {

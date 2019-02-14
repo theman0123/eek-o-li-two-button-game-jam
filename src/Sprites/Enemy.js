@@ -24,9 +24,11 @@ export default class Enemy extends Phaser.Physics.Matter.Sprite {
 
         // alert location to HUD
         this.scene.input.on("pointerup", () => {
-            this.scene.events.emit("enemyLocationToHUD", this);
-            this.calculateMovement(this.scene.player);
-            this.executeMovement(scene);
+            if (this.scene.player.isAlive) {
+                this.scene.events.emit("enemyLocationToHUD", this);
+                this.calculateMovement(this.scene.player);
+                this.executeMovement(scene);
+            }
         });
     }
     // powerup activated: run away from player
