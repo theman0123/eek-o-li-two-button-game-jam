@@ -21,11 +21,11 @@ red 'enemies' are equipped with 'lazy tracking' and can sense when you move!
 
 ## SENSORS:
 
-blue sensors on heads up display describe where the gate is located;
+- blue sensors on heads up display describe where the gate is located;
 
-red sensors describe where enemies are located.
+- red sensors describe where enemies are located.
 
 
 
 ## MISC:
-~started for two-button game jam in Dec 2018~
+-started for two-button game jam in Dec 2018
