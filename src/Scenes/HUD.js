@@ -34,8 +34,6 @@ export default class HUDScene extends Phaser.Scene {
                 loop: true,
                 delay: 1,
             });
-            // create and handle mute button
-            this.handleMute();
             // HUD enemy
             this.gameScene.events.on("enemyLocationToHUD", enemy => {
                 this.hudEnemyLocation(enemy, this.gameScene.player);
@@ -112,52 +110,88 @@ export default class HUDScene extends Phaser.Scene {
     // handle graphics
     // break into seperate parts
     handleGraphics(info) {
-        // draw and reference the container first instead of the 'levelText'
-        // create level text
-        this.levelText = this.add
-            .text(25, 25, `Level: ${info.level}`, {
-                fontSize: "52px",
-                fill: "#E8EFEE",
-                backgroundColor: "#ca3542",
-                strokeThickness: 4,
-            })
-            .setAlpha(0.7)
-            .setDepth(1);
-        const { x, y, width, height } = this.levelText;
-
         this.drawLevelContainer = new Phaser.Geom.Rectangle(
-            x - 5, //origin x
-            y - 5,
-            width + 10, // size x
-            height + 10,
+            0, //origin x
+            0,
+            this.sys.game.config.width, // size x
+            50,
         );
-        // container graphic
+        // container graphic - not visible
         this.levelContainerFill = this.add
             .graphics({
                 fillStyle: { color: 0xf6f2e9 },
             })
             .setDepth(0)
-            .setAlpha(0.7);
+            .setAlpha(0);
         this.levelContainerFill.fillRectShape(this.drawLevelContainer);
-
-        // 'handleLives' must be called after 'levelText'
-        // clear lives Graphic
         this.handleLives(info.player.lives);
+        // config for grid
+        var config = {
+            x: 0,
+            y: 0,
+            scrollMode: 0,
+            table: {
+                width: this.sys.game.config.width,
+                height: 150,
+                cellWidth: this.sys.game.config.width / 4,
+                cellHeight: 150,
+                columns: 4,
+            },
+            items: [this.levelText, this.muteButton],
+            //.concat(
+            //  this.livesGraphic.getChildren(),
+            // can't get this.livesGraphic.getChildren() to work with grid!! ugh.
+            createCellContainerCallback: cell => {
+                let scene = cell.scene,
+                    width = cell.width,
+                    height = cell.height,
+                    item = cell.item,
+                    index = cell.index;
+                switch (index) {
+                    case 0:
+                        // create level text
+                        this.levelText = this.add
+                            .text(0, height, info.level, {
+                                fontSize: "50px",
+                                fill: "#E8EFEE",
+                                backgroundColor: "#ca3542",
+                                strokeThickness: 4,
+                            })
+                            .setAlpha(0.7)
+                            .setDepth(1);
+                        return this.levelText.setOrigin(0);
+                    case 1:
+                        this.handleMute();
+                        cell.item = this.muteButton;
+                        return this.muteButton.setOrigin(0);
+                    case 2:
+                    default:
+                        return this.livesGraphic.getChildren();
+                }
+            },
+        };
+        // 'handleLives' must be called after 'levelText'
+        // this.handleLives(info.player.lives);
+
+        // create grid
+        this.displayGrid = this.rexUI.add
+            .gridTable(config)
+            .setOrigin(0)
+            .layout();
     }
 
     // handle mute
     handleMute() {
         // no duplicate creations
-        if (this.muteButton) {
+        if (this.muteButton === true) {
             return;
         }
-        const { width, height, y, x } = this.levelText;
         // mute button
-        this.muteButton = new MuteButton(this, width + 100, height - 4, 1);
+        this.muteButton = new MuteButton(this, 0, 0, 1);
         this.muteButton.on("pointerdown", this.muteButton.handleMuteSettings);
     }
     handleLives(lives) {
-        const { x, y, width, height } = this.levelText;
+        // const { x, y, width, height } = this.levelText;
 
         if (this.livesGraphic) {
             if (this.livesGraphic.children != undefined) {
@@ -165,15 +199,16 @@ export default class HUDScene extends Phaser.Scene {
             }
         }
 
-        // graphics for lives
+        // graphic for lives
         this.livesGraphic = this.add.group();
         for (let i = 0; i < lives; i++) {
-            let startWidth = this.sys.game.config.width - (i + 1) * x;
-            let margin = 15 * i;
+            // let startWidth = this.sys.game.config.width - (i + 1) * x;
+            // let margin = 15 * i;
             // lives graphic and position
             let life = this.add
-                .image(startWidth - margin, height - y / 2, "eek-tumble", 0)
-                .setScale(3);
+                .image(0, 0, "eek-tumble", 0)
+                .setScale(3)
+                .setOrigin(0);
             this.livesGraphic.add(life);
         }
     }
@@ -231,12 +266,28 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     gameOver() {
+        console.log("gamescene", this.gameScene);
+
+        this.maskDimensions = new Phaser.Geom.Rectangle(
+            0,
+            0,
+            window.innerWidth,
+            window.innerHeight,
+        );
+        this.maskDisplay = this.add.graphics().setScrollFactor(0);
+
+        this.maskDisplay
+            .fillGradientStyle(0xea4141)
+            .setDepth(0)
+            .setAlpha(0.7);
+        this.maskDisplay.fillRectShape(this.maskDimensions);
+
         this.gameOverText = this.add.text(
             this.gameScene.cameras.main.centerX,
             this.gameScene.cameras.main.centerY / 2,
             `GAME OVER`,
             {
-                fontSize: "70px",
+                fontSize: "50px",
                 fill: "#E8EFEE",
                 backgroundColor: "#ca3542",
                 strokeThickness: 3,
@@ -282,9 +333,9 @@ export default class HUDScene extends Phaser.Scene {
     }
     removeTextElements() {
         this.levelText.destroy();
+        !!this.maskDisplay ? this.maskDisplay.destroy() : null;
         !!this.restartButton ? this.restartButton.destroy() : null;
         !!this.tryAgainText ? this.tryAgainText.destroy() : null;
         !!this.gameOverText ? this.gameOverText.destroy() : null;
-        console.log("remove text elements");
     }
 }

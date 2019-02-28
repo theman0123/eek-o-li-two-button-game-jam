@@ -1,5 +1,4 @@
 import "phaser";
-// import { castDie } from "../utils";
 
 export default class MuteButton extends Phaser.GameObjects.Image {
     constructor(scene, x, y, frame) {
