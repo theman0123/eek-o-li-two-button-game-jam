@@ -18,6 +18,7 @@ export default class HUDScene extends Phaser.Scene {
 
         // get info - USE AS INITIALIZER
         this.gameScene.events.on("info", info => {
+            this.info = info;
             // create/handle graphics
             this.handleGraphics(info);
             // create/handle HUD
@@ -56,7 +57,7 @@ export default class HUDScene extends Phaser.Scene {
                         `${this.gameStartsInTimer.getRepeatCount()}`,
                     );
                     if (this.gameStartsInTimer.getRepeatCount() === 0) {
-                        this.removeTextElements();
+                        this.removeCountdownElements();
                         this.gameScene.player.isAlive = true;
                     }
                 },
@@ -109,13 +110,9 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     // handle graphics
+    // break into seperate parts
     handleGraphics(info) {
-        // clear lives Graphic
-        if (this.livesGraphic) {
-            if (this.livesGraphic.children != undefined) {
-                this.livesGraphic.clear(true, true);
-            }
-        }
+        // draw and reference the container first instead of the 'levelText'
         // create level text
         this.levelText = this.add
             .text(25, 25, `Level: ${info.level}`, {
@@ -126,20 +123,8 @@ export default class HUDScene extends Phaser.Scene {
             })
             .setAlpha(0.7)
             .setDepth(1);
-        // level text dimensions for easy access
         const { x, y, width, height } = this.levelText;
 
-        // graphics for lives
-        this.livesGraphic = this.add.group();
-        for (let i = 0; i < info.player.lives; i++) {
-            let startWidth = this.sys.game.config.width - (i + 1) * x;
-            let margin = 15 * i;
-            // lives graphic and position
-            let life = this.add
-                .image(startWidth - margin, height - y / 2, "eek-tumble", 0)
-                .setScale(3);
-            this.livesGraphic.add(life);
-        }
         this.drawLevelContainer = new Phaser.Geom.Rectangle(
             x - 5, //origin x
             y - 5,
@@ -154,6 +139,10 @@ export default class HUDScene extends Phaser.Scene {
             .setDepth(0)
             .setAlpha(0.7);
         this.levelContainerFill.fillRectShape(this.drawLevelContainer);
+
+        // 'handleLives' must be called after 'levelText'
+        // clear lives Graphic
+        this.handleLives(info.player.lives);
     }
 
     // handle mute
@@ -166,6 +155,27 @@ export default class HUDScene extends Phaser.Scene {
         // mute button
         this.muteButton = new MuteButton(this, width + 100, height - 4, 1);
         this.muteButton.on("pointerdown", this.muteButton.handleMuteSettings);
+    }
+    handleLives(lives) {
+        const { x, y, width, height } = this.levelText;
+
+        if (this.livesGraphic) {
+            if (this.livesGraphic.children != undefined) {
+                this.livesGraphic.clear(true, true);
+            }
+        }
+
+        // graphics for lives
+        this.livesGraphic = this.add.group();
+        for (let i = 0; i < lives; i++) {
+            let startWidth = this.sys.game.config.width - (i + 1) * x;
+            let margin = 15 * i;
+            // lives graphic and position
+            let life = this.add
+                .image(startWidth - margin, height - y / 2, "eek-tumble", 0)
+                .setScale(3);
+            this.livesGraphic.add(life);
+        }
     }
     // hud enemy
     hudEnemyLocation(enemy, player) {
@@ -261,11 +271,20 @@ export default class HUDScene extends Phaser.Scene {
         this.restartButton.setScale(4);
         this.restartButton.setInteractive();
         this.restartButton.on("pointerdown", () => {
-            this.gameScene.restart();
+            this.removeTextElements();
+            this.gameScene.restart(true);
         });
+        this.handleLives(this.info);
     }
-    removeTextElements() {
+    removeCountdownElements() {
         this.gameStartText.destroy();
         this.gameCountDownText.destroy();
+    }
+    removeTextElements() {
+        this.levelText.destroy();
+        !!this.restartButton ? this.restartButton.destroy() : null;
+        !!this.tryAgainText ? this.tryAgainText.destroy() : null;
+        !!this.gameOverText ? this.gameOverText.destroy() : null;
+        console.log("remove text elements");
     }
 }

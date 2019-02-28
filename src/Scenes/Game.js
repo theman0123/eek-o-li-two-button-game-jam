@@ -139,6 +139,7 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.startFollow(this.player);
 
         this.addCollisions();
+        this.hudScene = this.scene.get("HUD");
 
         // remove later
         // this.lose(this.enemies, this.enemies.getChildren()[0], this.player);
@@ -189,7 +190,7 @@ export default class GameScene extends Phaser.Scene {
         // destroy HUD elements
         if (!this.player.isAlive && this.info.player.lives <= 0) {
             this.hudScene.gameOver();
-        } else this.hudScene.levelText.destroy();
+        } //else this.hudScene.removeTextElements();
     }
     // lose
     lose(enemies, enemy, player) {
@@ -218,7 +219,8 @@ export default class GameScene extends Phaser.Scene {
                 } else {
                     // game over
                     this.cameras.main.fadeIn(2000);
-                    this.handleHUDScene();
+                    // this.handleHUDScene();
+                    this.hudScene.gameOver();
                 }
             },
             this,
@@ -235,7 +237,15 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.resize(width, height);
     }
     // win
-    restart() {
+    restart(info) {
+        // TODO: don't play gate animation
+        this.win(info);
+    }
+
+    update() {}
+    win(info) {
+        // TODO: clear all text ???
+
         if (!this.loadingLevel) {
             // adjust camera
             this.cameras.main.startFollow(this.gate);
@@ -252,18 +262,35 @@ export default class GameScene extends Phaser.Scene {
             // level up!
             this.info.level++;
             this.cameras.main.fade(1500, 0, 0, 0);
-            this.cameras.main.on(
-                "camerafadeoutcomplete",
-                () => {
-                    this.loadingLevel = true;
-                    // handle HUD scene elements
-                    this.handleHUDScene();
-                    this.scene.restart(this.info);
-                },
-                this,
-            );
+            this.cameras.main.on("camerafadeoutcomplete", () => {
+                this.loadingLevel = true;
+                console.log("win, camera fade");
+                // TODO don't allow try again button to be clicked till after fade!!
+                // handle HUD scene elements
+                // this.handleHUDScene();
+
+                //  this.scene.restart(this.info)
+                this.scene.start("Game", {
+                    level: 0,
+                    powerUps: {
+                        num: 2,
+                        maxStartDistance: 200,
+                        minStartDistance: 50,
+                    },
+                    enemies: {
+                        num: 1,
+                        maxStartDistance: 500,
+                        minStartDistance: 200,
+                    },
+                    bounds: {
+                        width: 800,
+                        height: 800,
+                    },
+                    player: {
+                        lives: 1,
+                    },
+                });
+            });
         }
     }
-
-    update() {}
 }
