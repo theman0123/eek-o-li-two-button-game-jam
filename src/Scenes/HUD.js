@@ -110,74 +110,42 @@ export default class HUDScene extends Phaser.Scene {
     // handle graphics
     // break into seperate parts
     handleGraphics(info) {
-        this.drawLevelContainer = new Phaser.Geom.Rectangle(
-            0, //origin x
-            0,
-            this.sys.game.config.width, // size x
-            50,
-        );
-        // container graphic - not visible
-        this.levelContainerFill = this.add
-            .graphics({
-                fillStyle: { color: 0xf6f2e9 },
-            })
-            .setDepth(0)
-            .setAlpha(0);
-        this.levelContainerFill.fillRectShape(this.drawLevelContainer);
-        this.handleLives(info.player.lives);
-        // config for grid
-        var config = {
-            x: 0,
-            y: 0,
-            scrollMode: 0,
-            table: {
-                width: this.sys.game.config.width,
-                height: 150,
-                cellWidth: this.sys.game.config.width / 4,
-                cellHeight: 150,
-                columns: 4,
-            },
-            items: [this.levelText, this.muteButton],
-            //.concat(
-            //  this.livesGraphic.getChildren(),
-            // can't get this.livesGraphic.getChildren() to work with grid!! ugh.
-            createCellContainerCallback: cell => {
-                let scene = cell.scene,
-                    width = cell.width,
-                    height = cell.height,
-                    item = cell.item,
-                    index = cell.index;
-                switch (index) {
-                    case 0:
-                        // create level text
-                        this.levelText = this.add
-                            .text(0, height, info.level, {
-                                fontSize: "50px",
-                                fill: "#E8EFEE",
-                                backgroundColor: "#ca3542",
-                                strokeThickness: 4,
-                            })
-                            .setAlpha(0.7)
-                            .setDepth(1);
-                        return this.levelText.setOrigin(0);
-                    case 1:
-                        this.handleMute();
-                        cell.item = this.muteButton;
-                        return this.muteButton.setOrigin(0);
-                    case 2:
-                    default:
-                        return this.livesGraphic.getChildren();
-                }
-            },
-        };
-        // 'handleLives' must be called after 'levelText'
-        // this.handleLives(info.player.lives);
-
+        // setup grid sizer
+        let color = "0xffffff";
         // create grid
-        this.displayGrid = this.rexUI.add
-            .gridTable(config)
-            .setOrigin(0)
-            .layout();
+        this.UIGrid = this.rexUI.add
+            .gridSizer({
+                column: 3,
+                row: 1,
+                width: this.sys.game.config.width,
+                height: 125,
+            })
+            .setOrigin(0);
+        //create lives
+        this.handleLives(info.player.lives);
+        // create level text
+        this.levelText = this.add
+            .text(0, 0, info.level, {
+                fontSize: "50px",
+                fill: "#E8EFEE",
+                backgroundColor: "#ca3542",
+                strokeThickness: 4,
+            })
+            .setAlpha(0.7)
+            .setDepth(1);
+        // create mute button
+        this.handleMute();
+        this.muteButton.setOrigin(0);
+
+        // this.UIGrid.columnWidth[0] = 100;
+        // this.UIGrid.columnWidth[1] = 100;
+        // this.UIGrid.columnWidth[2] = 100;
+        this.UIGrid.add(this.muteButton, 1, 0);
+        this.UIGrid.add(this.levelText, 0, 0);
+        this.UIGrid.add(this.livesGraphic.getChildren(), 2, 0);
+        this.UIGrid.layout();
+        this.UIGrid.drawBounds(this.add.graphics(), color);
+        debugger;
     }
 
     // handle mute
@@ -191,19 +159,16 @@ export default class HUDScene extends Phaser.Scene {
         this.muteButton.on("pointerdown", this.muteButton.handleMuteSettings);
     }
     handleLives(lives) {
-        // const { x, y, width, height } = this.levelText;
-
+        // clear images if they exist
         if (this.livesGraphic) {
             if (this.livesGraphic.children != undefined) {
                 this.livesGraphic.clear(true, true);
             }
         }
 
-        // graphic for lives
+        // draw image for lives
         this.livesGraphic = this.add.group();
         for (let i = 0; i < lives; i++) {
-            // let startWidth = this.sys.game.config.width - (i + 1) * x;
-            // let margin = 15 * i;
             // lives graphic and position
             let life = this.add
                 .image(0, 0, "eek-tumble", 0)
