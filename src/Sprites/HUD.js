@@ -29,14 +29,19 @@ export default class HUD extends Phaser.GameObjects.Sprite {
     }
 
     resize() {
-        // right and bottom aren't firing...
-        this.setPosition(
-            this.scene.game.config.width,
-            this.scene.game.config.height,
-        );
-        this.setDisplaySize(
-            this.scene.game.config.width,
-            this.scene.game.config.height,
-        );
+        // DON'T REMOVE: will miss last resize event if no delay
+        this.hudTimer = this.scene.time.addEvent({
+            delay: 500,
+            callback: () => {
+                this.setPosition(
+                    this.scene.game.config.width,
+                    this.scene.game.config.height,
+                ).setDisplaySize(
+                    this.scene.game.config.width,
+                    this.scene.game.config.height,
+                );
+            },
+            repeat: 2,
+        });
     }
 }
