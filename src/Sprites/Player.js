@@ -7,7 +7,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.move = false;
         this.airFriction = 0.05;
         // is alive?
-        this.isAlive = true;
+        this.isAlive = false;
         //  add our player to the scene
         this.scene.add.existing(this);
         //  scale player

@@ -12,8 +12,6 @@ export default class GameScene extends Phaser.Scene {
 
     init(info) {
         this.info = info;
-        // ensure correct restart
-        this.loadingLevel = false;
         // adjust difficulty
         // size = larger
         this.info.bounds.width += 400;
@@ -44,7 +42,7 @@ export default class GameScene extends Phaser.Scene {
             callback: () => {
                 this.time.addEvent({
                     delay: 1000,
-                    callback: this.restart(),
+                    callback: this.win(),
                     callbackScope: this,
                     repeat: -1,
                 });
@@ -101,6 +99,7 @@ export default class GameScene extends Phaser.Scene {
             this.info.bounds.height / 2,
             this,
         );
+        this.player.isAlive = false;
 
         // enemy
 
@@ -138,6 +137,10 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.startFollow(this.player);
 
         this.addCollisions();
+        this.hudScene = this.scene.get("HUD");
+
+        // remove later
+        // this.lose(this.enemies, this.enemies.getChildren()[0], this.player);
     }
 
     createWorldBounds() {
@@ -185,7 +188,7 @@ export default class GameScene extends Phaser.Scene {
         // destroy HUD elements
         if (!this.player.isAlive && this.info.player.lives <= 0) {
             this.hudScene.gameOver();
-        } else this.hudScene.levelText.destroy();
+        } //else this.hudScene.removeTextElements();
     }
     // lose
     lose(enemies, enemy, player) {
@@ -203,22 +206,17 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.startFollow(enemy);
         enemy.anims.play("eek-lose");
         this.cameras.main.fade(1600, 0, 0, 0);
-        this.cameras.main.on(
-            "camerafadeoutcomplete",
-            () => {
-                // check # of lives
-                if (this.info.player.lives > 0) {
-                    this.handleHUDScene();
-                    this.loadingLevel = true;
-                    this.scene.restart(this.info);
-                } else {
-                    // game over
-                    this.cameras.main.fadeIn(2000);
-                    this.handleHUDScene();
-                }
-            },
-            this,
-        );
+        this.cameras.main.on("camerafadeoutcomplete", () => {
+            // check # of lives
+            if (this.info.player.lives > 0) {
+                this.scene.restart();
+            } else {
+                // game over
+                this.cameras.main.fadeIn(2000);
+                // this.handleHUDScene();
+                this.hudScene.gameOver();
+            }
+        });
     }
 
     resize(width, height) {
@@ -230,36 +228,33 @@ export default class GameScene extends Phaser.Scene {
         }
         this.cameras.resize(width, height);
     }
-    // win
     restart() {
-        if (!this.loadingLevel) {
-            // adjust camera
-            this.cameras.main.startFollow(this.gate);
-            // remove player from scene
-            this.player.setVisible(false);
-            this.matter.world.remove(this.player);
-            // play win animation
-            this.gate.anims.stop("flash");
-            this.gate.anims.play("levelWin");
-            // stop sounds/music
-            this.sound.stopAll();
-            // play win sound
-            this.sound.play("level-win");
-            // level up!
-            this.info.level++;
-            this.cameras.main.fade(1500, 0, 0, 0);
-            this.cameras.main.on(
-                "camerafadeoutcomplete",
-                () => {
-                    this.loadingLevel = true;
-                    // handle HUD scene elements
-                    this.handleHUDScene();
-                    this.scene.restart(this.info);
-                },
-                this,
-            );
-        }
+        this.hudScene.removeTextElements();
+        this.info.player.lives++;
+        this.scene.start("Game", this.info);
     }
 
-    update() {}
+    win() {
+        // adjust camera
+        this.cameras.main.startFollow(this.gate);
+        // remove player from scene
+        this.player.setVisible(false);
+        this.matter.world.remove(this.player);
+        // play win animation
+        this.gate.anims.stop("flash");
+        this.gate.anims.play("levelWin");
+        // stop sounds/music
+        this.sound.stopAll();
+        // play win sound
+        this.sound.play("level-win");
+        // camera fade
+        this.cameras.main.fade(1500, 0, 0, 0);
+        this.cameras.main.on("camerafadeoutcomplete", () => {
+            // clear all text
+            this.hudScene.removeTextElements();
+            // level up!
+            this.info.level++;
+            this.scene.start("Game", this.info);
+        });
+    }
 }

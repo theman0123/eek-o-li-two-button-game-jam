@@ -1,5 +1,4 @@
 import "phaser";
-// import { castDie } from "../utils";
 
 export default class MuteButton extends Phaser.GameObjects.Image {
     constructor(scene, x, y, frame) {
@@ -14,6 +13,7 @@ export default class MuteButton extends Phaser.GameObjects.Image {
         // set to mute
         this.scene.sound.mute = true;
         this.setAlpha(0.5);
+        this.setScale(0.8);
     }
 
     mute() {
