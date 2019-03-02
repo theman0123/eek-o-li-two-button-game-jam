@@ -100,7 +100,7 @@ export default class Preloader extends Phaser.Scene {
                         height: 800,
                     },
                     player: {
-                        lives: 1,
+                        lives: 2,
                     },
                 });
             }

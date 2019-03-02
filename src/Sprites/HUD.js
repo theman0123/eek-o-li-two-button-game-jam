@@ -9,10 +9,9 @@ export default class HUD extends Phaser.GameObjects.Sprite {
             "HUD",
             7,
         );
+        this.scene = scene;
         // add to scene
         this.scene.add.existing(this);
-        // modify size
-        this.setDisplaySize(scene.game.config.width, scene.game.config.height);
         // place on top layer
         this.setDepth(2);
         // fix to camera
@@ -23,5 +22,21 @@ export default class HUD extends Phaser.GameObjects.Sprite {
         this.setVisible(false);
         // make sensors see through
         this.setAlpha(0.4);
+        // modify size
+        this.resize();
+        // resize on screen adjustment
+        this.scene.events.on("resize", this.resize, this);
+    }
+
+    resize() {
+        // right and bottom aren't firing...
+        this.setPosition(
+            this.scene.game.config.width,
+            this.scene.game.config.height,
+        );
+        this.setDisplaySize(
+            this.scene.game.config.width,
+            this.scene.game.config.height,
+        );
     }
 }

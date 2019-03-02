@@ -13,6 +13,7 @@ export default class MuteButton extends Phaser.GameObjects.Image {
         // set to mute
         this.scene.sound.mute = true;
         this.setAlpha(0.5);
+        this.setScale(0.8);
     }
 
     mute() {

@@ -107,45 +107,54 @@ export default class HUDScene extends Phaser.Scene {
         }
     }
 
-    // handle graphics
-    // break into seperate parts
+    // handle graphics/grid
     handleGraphics(info) {
-        // setup grid sizer
-        let color = "0xffffff";
-        // create grid
-        this.UIGrid = this.rexUI.add
-            .gridSizer({
-                column: 3,
-                row: 1,
-                width: this.sys.game.config.width,
-                height: 125,
-            })
-            .setOrigin(0);
-        //create lives
+        // setup grid
+        this.setupGrid();
+        //create lives graphic
         this.handleLives(info.player.lives);
+        // create mute button
+        this.handleMute();
+        this.muteButton.setOrigin(0);
         // create level text
         this.levelText = this.add
             .text(0, 0, info.level, {
-                fontSize: "50px",
+                fontSize: "44px",
                 fill: "#E8EFEE",
                 backgroundColor: "#ca3542",
                 strokeThickness: 4,
             })
             .setAlpha(0.7)
             .setDepth(1);
-        // create mute button
-        this.handleMute();
-        this.muteButton.setOrigin(0);
+        // padding config for grid
+        let paddingConfig = {
+            left: 20,
+            right: 20,
+            top: 10,
+            bottom: 0,
+        };
+        // insert level text at r0:c0
+        this.UIGrid.add(
+            this.levelText,
+            0,
+            0,
+            Phaser.Display.Align.LEFT_CENTER,
+            { top: 10, left: 10 },
+        );
+        // insert mute button to grid r0:c1
+        this.UIGrid.add(
+            this.muteButton,
+            1,
+            0,
+            Phaser.Display.Align.LEFT_CENTER,
+            paddingConfig,
+            false,
+        );
 
-        // this.UIGrid.columnWidth[0] = 100;
-        // this.UIGrid.columnWidth[1] = 100;
-        // this.UIGrid.columnWidth[2] = 100;
-        this.UIGrid.add(this.muteButton, 1, 0);
-        this.UIGrid.add(this.levelText, 0, 0);
-        this.UIGrid.add(this.livesGraphic.getChildren(), 2, 0);
+        // draw grid and children
         this.UIGrid.layout();
-        this.UIGrid.drawBounds(this.add.graphics(), color);
-        debugger;
+        // for debug purposes
+        // this.UIGrid.drawBounds(this.add.graphics());
     }
 
     // handle mute
@@ -172,9 +181,18 @@ export default class HUDScene extends Phaser.Scene {
             // lives graphic and position
             let life = this.add
                 .image(0, 0, "eek-tumble", 0)
-                .setScale(3)
+                .setScale(2)
                 .setOrigin(0);
+            // add to group
             this.livesGraphic.add(life);
+            // add to grid
+            this.UIGrid.add(
+                this.livesGraphic.getChildren()[i],
+                2 + i,
+                0,
+                Phaser.Display.Align.LEFT_CENTER,
+                { left: -20 },
+            );
         }
     }
     // hud enemy
@@ -231,8 +249,6 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     gameOver() {
-        console.log("gamescene", this.gameScene);
-
         this.maskDimensions = new Phaser.Geom.Rectangle(
             0,
             0,
@@ -302,5 +318,23 @@ export default class HUDScene extends Phaser.Scene {
         !!this.restartButton ? this.restartButton.destroy() : null;
         !!this.tryAgainText ? this.tryAgainText.destroy() : null;
         !!this.gameOverText ? this.gameOverText.destroy() : null;
+    }
+    setupGrid() {
+        let screenWidth = this.sys.game.config.width;
+        // setup grid sizer
+        this.UIGrid = this.rexUI.add
+            .gridSizer({
+                column: 5,
+                row: 1,
+                width: screenWidth > 400 ? 400 : screenWidth,
+                height: 75,
+            })
+            .setOrigin(0);
+        // column proportions
+        this.UIGrid.setColumnProportion(0, 0.1);
+        this.UIGrid.setColumnProportion(1, 0.25);
+        this.UIGrid.setColumnProportion(2, 0.1);
+        this.UIGrid.setColumnProportion(3, 0.1);
+        this.UIGrid.setColumnProportion(4, 0.4);
     }
 }
