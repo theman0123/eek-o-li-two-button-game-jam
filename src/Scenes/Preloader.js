@@ -1,22 +1,24 @@
 import "phaser";
 
-// display tap to play AFTER Load is 100% - maybe just have tweens not repeat....
-// make background interactive
-// on click => start gameScene
-
 export default class Preloader extends Phaser.Scene {
     constructor() {
         super("Preloader");
     }
 
     init() {
-        this.width = this.cameras.main.width;
-        this.height = this.cameras.main.height;
+        this.width = this.sys.game.config.width;
+        this.height = this.sys.game.config.height;
 
         this.ready = 0;
     }
 
     preload() {
+        // eek
+        this.titleEek = this.add
+            .sprite(this.width / 2 - 170, 0, "title-sprites")
+            .play("eek-title")
+            .setScale(4)
+            .setOrigin(0);
         // load in the spritesheet
         this.loadSprites();
 
@@ -27,41 +29,28 @@ export default class Preloader extends Phaser.Scene {
         // audio
         this.loadAudio();
 
-        // title background
-        this.background = this.add
-            .image(this.width / 2, this.height / 2, "title-sprites", 0)
-            .setDisplaySize(300, 500);
-        // enemy
-        this.enemy = this.add.image(
-            this.width / 2 - this.background.displayWidth / 2 + 50,
-
-            this.height / 2 + this.background.displayHeight / 2 - 50,
-            "title-sprites",
-            2,
-        );
-        // eek
-        this.eek = this.add
-            .image(
-                this.width / 2 + this.background.displayWidth / 2 - 50,
-                this.height / 2 + this.background.displayHeight / 2 - 50,
-                "title-sprites",
-                3,
-            )
-            .setScale(2);
-
         // Text
         this.setupText();
-        // TWEENS
-        this.setupTweens();
-        //
+
         // loading
         // update progress bar
         this.load.on("progress", value => {
-            // this.eek.setX(parseInt(value * 100));
-            // this.eekTweenMovement.updateTo("x", parseInt(value * 100));
-            console.log(parseInt(value * 100) + "%", value);
             if (value === 1) {
                 this.loadingAssetsText.destroy();
+                this.loadingText.destroy();
+                // tap to play!
+                this.tapToPlayText = this.add
+                    .text(
+                        this.width / 2 - 150,
+                        this.height - 150,
+                        "Tap To Play!",
+                        {
+                            fontSize: "40px",
+                            fill: "#0d8c92",
+                            strokeThickness: 5,
+                        },
+                    )
+                    .setDepth(1);
             }
         });
 
@@ -100,7 +89,7 @@ export default class Preloader extends Phaser.Scene {
                         height: 800,
                     },
                     player: {
-                        lives: 2,
+                        lives: 0,
                     },
                 });
             }
@@ -250,82 +239,5 @@ export default class Preloader extends Phaser.Scene {
             })
             .setDepth(1)
             .setAlpha(0.7);
-        // tap to play!
-        this.tapToPlayText = this.add
-            .text(
-                this.width / 2 - this.background.displayWidth / 2,
-                this.height - 150,
-                "Tap To Play!",
-                {
-                    fontSize: "40px",
-                    fill: "#d8a6cc",
-                    strokeThickness: 5,
-                },
-            )
-            .setDepth(1);
-    }
-    setupTweens() {
-        // text
-        this.textAlphaTween = this.tweens.add({
-            targets: this.titleText,
-            duration: 5000,
-            repeat: 0,
-            alpha: 1,
-        });
-        console.log(this.titleText);
-        // enemy movement
-        this.enemyTweenMovement = this.tweens.add({
-            targets: this.enemy,
-            x: this.width / 2, // '+=100'
-            y: this.background.displayHeight / 2, // '+=100'
-            ease: "Power2", // 'Cubic', 'Elastic', 'Bounce', 'Back', 'Linear, 'Sine', 'Ease'
-            duration: 3000,
-            repeat: -1, // -1: infinity
-            yoyo: true,
-        });
-        this.enemyTweenSize = this.tweens.add({
-            targets: this.enemy,
-            scaleX: 2,
-            scaleY: 2,
-            ease: "Power2", // 'Cubic', 'Elastic', 'Bounce', 'Back', 'Linear, 'Sine', 'Ease'
-            duration: 3000,
-            repeat: -1, // -1: infinity
-            yoyo: true,
-        });
-        // eek movement
-        this.eekTweenMovement = this.tweens.add({
-            targets: this.eek,
-            x: this.width / 2 - this.background.displayWidth / 2, // '+=100'
-            y: this.height / 2 - this.background.displayHeight / 2, // '+=100'
-            ease: "Power2", // 'Cubic', 'Elastic', 'Bounce', 'Back', 'Linear, 'Sine', 'Ease'
-            duration: 3000,
-            repeat: -1, // -1: infinity
-            yoyo: true,
-            // paused: true,
-        });
-        this.eekTweenSize = this.tweens.add({
-            targets: this.eek,
-            scaleX: 0.5,
-            scaleY: 0.5,
-            ease: "Power2", // 'Cubic', 'Elastic', 'Bounce', 'Back', 'Linear, 'Sine', 'Ease'
-            duration: 3000,
-            repeat: -1, // -1: infinity
-            yoyo: true,
-        });
-        this.eekTweenTwist = this.tweens.add({
-            targets: this.eek,
-            rotation: 2,
-            ease: "Linear",
-            duration: 3000,
-            repeat: -1,
-            yoyo: true,
-        });
-        this.eekTweenAlpha = this.tweens.add({
-            targets: this.eek,
-            alpha: 0,
-            duration: 3000,
-            repeat: -1,
-            yoyo: true,
-        });
     }
 }

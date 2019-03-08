@@ -12,6 +12,73 @@ export default class HUDScene extends Phaser.Scene {
 
     // ALPHABETICAL BY METHOD
 
+    addElementsToGameOverGrid() {
+        this.gameOverGrid.add(
+            this.gameOverText,
+            0,
+            0,
+            Phaser.Display.Align.LEFT_CENTER,
+            {
+                left: 10,
+                right: 10,
+                bottom: 50,
+            },
+            false,
+        );
+        this.gameOverGrid.add(
+            this.tryAgainText,
+            0,
+            1,
+            Phaser.Display.Align.LEFT_CENTER,
+            {
+                bottom: 50,
+                left: 50,
+                right: 50,
+            },
+            false,
+        );
+        this.gameOverGrid.add(
+            this.restartButton,
+            0,
+            2,
+            Phaser.Display.Align.CENTER,
+            {
+                left: 75,
+                right: 75,
+                bottom: 50,
+                top: 0,
+            },
+            false,
+        );
+    }
+
+    addElementsToUIGrid() {
+        // padding config for grid
+        let paddingConfig = {
+            left: 20,
+            right: 20,
+            top: 10,
+            bottom: 0,
+        };
+        // insert level text at r0:c0
+        this.UIGrid.add(
+            this.levelText,
+            0,
+            0,
+            Phaser.Display.Align.LEFT_CENTER,
+            { top: 10, left: 10 },
+        );
+        // insert mute button to grid r0:c1
+        this.UIGrid.add(
+            this.muteButton,
+            1,
+            0,
+            Phaser.Display.Align.LEFT_CENTER,
+            paddingConfig,
+            false,
+        );
+    }
+
     create() {
         // get a reference to game scene
         this.gameScene = this.scene.get("Game");
@@ -126,30 +193,7 @@ export default class HUDScene extends Phaser.Scene {
             })
             .setAlpha(0.7)
             .setDepth(1);
-        // padding config for grid
-        let paddingConfig = {
-            left: 20,
-            right: 20,
-            top: 10,
-            bottom: 0,
-        };
-        // insert level text at r0:c0
-        this.UIGrid.add(
-            this.levelText,
-            0,
-            0,
-            Phaser.Display.Align.LEFT_CENTER,
-            { top: 10, left: 10 },
-        );
-        // insert mute button to grid r0:c1
-        this.UIGrid.add(
-            this.muteButton,
-            1,
-            0,
-            Phaser.Display.Align.LEFT_CENTER,
-            paddingConfig,
-            false,
-        );
+        this.addElementsToUIGrid();
 
         // draw grid and children
         this.UIGrid.layout();
@@ -249,6 +293,11 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     gameOver() {
+        // remove lives graphic
+        this.handleLives(this.info);
+        // setup grid
+        this.setupGameOverGrid();
+        // gradient vsfx
         this.maskDimensions = new Phaser.Geom.Rectangle(
             0,
             0,
@@ -263,57 +312,53 @@ export default class HUDScene extends Phaser.Scene {
             .setAlpha(0.7);
         this.maskDisplay.fillRectShape(this.maskDimensions);
 
-        this.gameOverText = this.add.text(
-            this.gameScene.cameras.main.centerX,
-            this.gameScene.cameras.main.centerY / 2,
-            `GAME OVER`,
-            {
-                fontSize: "50px",
-                fill: "#E8EFEE",
-                backgroundColor: "#ca3542",
-                strokeThickness: 3,
-            },
-        );
-        // in order to center 'game over' it had to be created first^^
-        this.gameOverText.setX(
-            this.gameScene.cameras.main.centerX - this.gameOverText.width / 2,
-        );
-        // try again text
-        this.tryAgainText = this.add.text(
-            this.gameScene.cameras.main.centerX,
-            this.gameScene.cameras.main.centerY,
-            "Try Again?",
-            {
-                fontSize: "40px",
+        this.gameOverText = this.add
+            .text(0, 0, `GAME OVER`, {
+                fontSize: "30px",
                 fill: "#E8EFEE",
                 backgroundColor: "#ca3542",
                 strokeThickness: 2,
-            },
-        );
-        this.tryAgainText.setX(
-            this.gameScene.cameras.main.centerX - this.tryAgainText.width / 2,
-        );
+            })
+            .setOrigin(0);
+        // try again text
+        this.tryAgainText = this.add
+            .text(
+                this.gameScene.cameras.main.centerX,
+                this.gameScene.cameras.main.centerY,
+                "Try Again?",
+                {
+                    fontSize: "20px",
+                    fill: "#E8EFEE",
+                    backgroundColor: "#ca3542",
+                    strokeThickness: 1,
+                },
+            )
+            .setOrigin(0);
         // create restart button
-        this.restartButton = this.add.image(
-            this.gameScene.cameras.main.centerX,
-            this.gameScene.cameras.main.centerY +
-                this.gameScene.cameras.main.centerY / 4,
-            "button-yes",
-        );
-        this.restartButton.setScale(4);
-        this.restartButton.setInteractive();
+        this.restartButton = this.add
+            .image(0, 0, "button-yes")
+            .setInteractive();
         this.restartButton.on("pointerdown", () => {
             this.removeTextElements();
             this.gameScene.restart(true);
         });
-        this.handleLives(this.info);
+        this.addElementsToGameOverGrid();
+
+        this.gameOverGrid.layout();
+        // uncomment to aid debugging and layout
+        // this.gameOverGrid.drawBounds(this.add.graphics());
+
+        console.log(this.gameOverGrid, this.gameOverText);
     }
+
     removeCountdownElements() {
         this.gameStartText.destroy();
         this.gameCountDownText.destroy();
     }
+
     removeTextElements() {
         this.levelText.destroy();
+        this.muteButton.destroy();
         !!this.maskDisplay ? this.maskDisplay.destroy() : null;
         !!this.restartButton ? this.restartButton.destroy() : null;
         !!this.tryAgainText ? this.tryAgainText.destroy() : null;
@@ -336,5 +381,24 @@ export default class HUDScene extends Phaser.Scene {
         this.UIGrid.setColumnProportion(2, 0.1);
         this.UIGrid.setColumnProportion(3, 0.1);
         this.UIGrid.setColumnProportion(4, 0.4);
+    }
+    setupGameOverGrid() {
+        let screen = this.sys.game.config;
+        // setup grid sizer
+        this.gameOverGrid = this.rexUI.add
+            .gridSizer({
+                column: 1,
+                row: 3,
+                width: 300,
+                height: 400,
+                x: screen.width / 2 - 150,
+                y: screen.height / 2 - 200,
+                columnProportions: 1,
+            })
+            .setOrigin(0);
+        // row proportions
+        this.gameOverGrid.setRowProportion(0, 0.3);
+        this.gameOverGrid.setRowProportion(1, 0.2);
+        this.gameOverGrid.setRowProportion(2, 0.3);
     }
 }
