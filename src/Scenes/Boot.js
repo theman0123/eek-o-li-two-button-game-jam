@@ -15,7 +15,15 @@ export default class BootScene extends Phaser.Scene {
     // ALPHABETICAL BY METHOD
 
     create() {
-        
+        this.anims.create({
+            key: "eek-title",
+            frames: this.anims.generateFrameNames("title-sprites", {
+                frames: [4, 5, 6],
+            }),
+            frameRate: 4,
+            yoyo: true,
+            repeat: -1,
+        });
 
         this.scene.start("Preloader");
     }
