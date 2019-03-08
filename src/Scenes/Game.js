@@ -209,6 +209,7 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.on("camerafadeoutcomplete", () => {
             // check # of lives
             if (this.info.player.lives > 0) {
+                this.hudScene.removeTextElements();
                 this.scene.restart();
             } else {
                 // game over

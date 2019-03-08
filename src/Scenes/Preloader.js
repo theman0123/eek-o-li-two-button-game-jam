@@ -100,7 +100,7 @@ export default class Preloader extends Phaser.Scene {
                         height: 800,
                     },
                     player: {
-                        lives: 2,
+                        lives: 0,
                     },
                 });
             }
@@ -272,7 +272,6 @@ export default class Preloader extends Phaser.Scene {
             repeat: 0,
             alpha: 1,
         });
-        console.log(this.titleText);
         // enemy movement
         this.enemyTweenMovement = this.tweens.add({
             targets: this.enemy,
