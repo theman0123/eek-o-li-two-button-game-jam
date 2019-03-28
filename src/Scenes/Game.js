@@ -135,6 +135,14 @@ export default class GameScene extends Phaser.Scene {
 
         // update camera to follow this.player
         this.cameras.main.startFollow(this.player);
+        // start zoomed out
+        this.cameras.main.setZoom(0.3);
+        let zoomTimer = this.time.addEvent({
+            delay: 700,
+            callback: () => this.cameras.main.zoomTo(0.9, 1000),
+            callbackScope: this,
+            repeat: 0,
+        });
 
         this.addCollisions();
         this.hudScene = this.scene.get("HUD");

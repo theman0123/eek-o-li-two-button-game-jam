@@ -49,9 +49,6 @@ export default class HUDScene extends Phaser.Scene {
         // padding config for grid
         let paddingConfig = {
             left: 20,
-            // right: 20,
-            // top: 10,
-            // bottom: 0,
         };
         // insert level text at r0:c0
         this.UIGrid.add(
@@ -196,8 +193,8 @@ export default class HUDScene extends Phaser.Scene {
         // right most ui elements add last
         this.handleLives(info.player.lives);
         // add background to UI
-        var background = this.add.rectangle(0, 0, 50, 50, 0xffffff, 0.2);
-        this.UIGrid.addBackground(background).setDepth(0);
+        this.background = this.add.rectangle(0, 0, 50, 50, 0xffffff, 0.2);
+        this.UIGrid.addBackground(this.background).setDepth(0);
 
         // draw grid and children
         this.UIGrid.layout();
@@ -364,6 +361,7 @@ export default class HUDScene extends Phaser.Scene {
     removeTextElements() {
         this.levelText.destroy();
         this.muteButton.destroy();
+        this.background.destroy();
         !!this.maskDisplay ? this.maskDisplay.destroy() : null;
         !!this.restartButton ? this.restartButton.destroy() : null;
         !!this.tryAgainText ? this.tryAgainText.destroy() : null;
