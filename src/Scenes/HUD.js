@@ -13,14 +13,14 @@ export default class HUDScene extends Phaser.Scene {
     // ALPHABETICAL BY METHOD
 
     addElementsToGameOverGrid() {
+        // this.gameOverGrid.add(this.gameOverText);
+        // this.gameOverGrid.add(this.tryAgainText);
+        // this.gameOverGrid.add(this.restartButton);
         this.gameOverGrid.add(
             this.gameOverText,
             0,
-            0,
-            Phaser.Display.Align.LEFT_CENTER,
+            Phaser.Display.Align.CENTER,
             {
-                left: 10,
-                right: 10,
                 bottom: 50,
             },
             false,
@@ -28,25 +28,18 @@ export default class HUDScene extends Phaser.Scene {
         this.gameOverGrid.add(
             this.tryAgainText,
             0,
-            1,
-            Phaser.Display.Align.LEFT_CENTER,
+            Phaser.Display.Align.CENTER,
             {
                 bottom: 50,
-                left: 50,
-                right: 50,
             },
             false,
         );
         this.gameOverGrid.add(
             this.restartButton,
             0,
-            2,
             Phaser.Display.Align.CENTER,
             {
-                left: 75,
-                right: 75,
                 bottom: 50,
-                top: 0,
             },
             false,
         );
@@ -56,24 +49,22 @@ export default class HUDScene extends Phaser.Scene {
         // padding config for grid
         let paddingConfig = {
             left: 20,
-            right: 20,
-            top: 10,
-            bottom: 0,
+            // right: 20,
+            // top: 10,
+            // bottom: 0,
         };
         // insert level text at r0:c0
         this.UIGrid.add(
             this.levelText,
             0,
-            0,
-            Phaser.Display.Align.LEFT_CENTER,
-            { top: 10, left: 10 },
+            Phaser.Display.Align.CENTER,
+            paddingConfig,
         );
         // insert mute button to grid r0:c1
         this.UIGrid.add(
             this.muteButton,
-            1,
             0,
-            Phaser.Display.Align.LEFT_CENTER,
+            Phaser.Display.Align.CENTER,
             paddingConfig,
             false,
         );
@@ -121,6 +112,8 @@ export default class HUDScene extends Phaser.Scene {
                     this.gameCountDownText.setText(
                         `${this.gameStartsInTimer.getRepeatCount()}`,
                     );
+                    // in order to realign in center
+                    this.gameStartContainer.layout();
                     if (this.gameStartsInTimer.getRepeatCount() === 0) {
                         this.removeCountdownElements();
                         this.gameScene.player.isAlive = true;
@@ -132,30 +125,37 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     createGameStartText() {
+        this.gameStartContainer = this.rexUI.add
+            .sizer({
+                orientation: "y",
+                x: this.game.config.width / 2 - 150,
+                y: this.game.config.height / 2 - 100,
+                width: 300,
+                height: 200,
+            })
+            .setOrigin(0);
         // 'ready' text
-        this.gameStartText = this.add.text(
-            this.game.config.width / 2 - 100,
-            this.game.config.height / 2 - 100,
-            "Ready: ",
-            {
-                fontFamily: "Arial",
-                fontSize: "56px",
-                color: "#fff",
-                strokeThickness: 3,
-            },
-        );
+        this.gameStartText = this.add.text(0, 0, "Ready: ", {
+            fontFamily: "Arial",
+            fontSize: "56px",
+            color: "#fff",
+            strokeThickness: 3,
+        });
         // countdown number
-        this.gameCountDownText = this.add.text(
-            this.game.config.width / 2 - 50,
-            this.game.config.height / 2 - 50,
-            "",
-            {
-                fontFamily: "Arial",
-                fontSize: "70px",
-                color: "#fff",
-                strokeThickness: 3,
-            },
+        this.gameCountDownText = this.add.text(0, 0, "", {
+            fontFamily: "Arial",
+            fontSize: "70px",
+            color: "#fff",
+            strokeThickness: 3,
+        });
+        this.gameStartContainer.add(this.gameStartText);
+        this.gameStartContainer.add(
+            this.gameCountDownText,
+            0,
+            Phaser.Display.Align.CENTER,
         );
+        this.gameStartContainer.layout();
+        // this.gameStartContainer.drawBounds(this.add.graphics());
     }
 
     // create HUD
@@ -178,11 +178,9 @@ export default class HUDScene extends Phaser.Scene {
     handleGraphics(info) {
         // setup grid
         this.setupGrid();
-        //create lives graphic
-        this.handleLives(info.player.lives);
         // create mute button
         this.handleMute();
-        this.muteButton.setOrigin(0);
+        this.muteButton;
         // create level text
         this.levelText = this.add
             .text(0, 0, info.level, {
@@ -194,6 +192,12 @@ export default class HUDScene extends Phaser.Scene {
             .setAlpha(0.7)
             .setDepth(1);
         this.addElementsToUIGrid();
+        //create lives graphic
+        // right most ui elements add last
+        this.handleLives(info.player.lives);
+        // add background to UI
+        var background = this.add.rectangle(0, 0, 50, 50, 0xffffff, 0.2);
+        this.UIGrid.addBackground(background).setDepth(0);
 
         // draw grid and children
         this.UIGrid.layout();
@@ -223,19 +227,19 @@ export default class HUDScene extends Phaser.Scene {
         this.livesGraphic = this.add.group();
         for (let i = 0; i < lives; i++) {
             // lives graphic and position
-            let life = this.add
-                .image(0, 0, "eek-tumble", 0)
-                .setScale(2)
-                .setOrigin(0);
+            let life = this.add.image(0, 0, "eek-tumble", 0).setScale(2);
             // add to group
             this.livesGraphic.add(life);
             // add to grid
             this.UIGrid.add(
                 this.livesGraphic.getChildren()[i],
-                2 + i,
                 0,
-                Phaser.Display.Align.LEFT_CENTER,
-                { left: -20 },
+                Phaser.Display.Align.CENTER,
+                {
+                    left: 10,
+                    bottom: 10,
+                },
+                false,
             );
         }
     }
@@ -293,6 +297,8 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     gameOver() {
+        // remove text elements in case of glitch
+        this.removeCountdownElements();
         // remove lives graphic
         this.handleLives(this.info);
         // setup grid
@@ -314,10 +320,10 @@ export default class HUDScene extends Phaser.Scene {
 
         this.gameOverText = this.add
             .text(0, 0, `GAME OVER`, {
-                fontSize: "30px",
+                fontSize: "50px",
                 fill: "#E8EFEE",
                 backgroundColor: "#ca3542",
-                strokeThickness: 2,
+                strokeThickness: 3,
             })
             .setOrigin(0);
         // try again text
@@ -327,16 +333,17 @@ export default class HUDScene extends Phaser.Scene {
                 this.gameScene.cameras.main.centerY,
                 "Try Again?",
                 {
-                    fontSize: "20px",
+                    fontSize: "30px",
                     fill: "#E8EFEE",
                     backgroundColor: "#ca3542",
-                    strokeThickness: 1,
+                    strokeThickness: 2,
                 },
             )
             .setOrigin(0);
         // create restart button
         this.restartButton = this.add
             .image(0, 0, "button-yes")
+            .setScale(3)
             .setInteractive();
         this.restartButton.on("pointerdown", () => {
             this.removeTextElements();
@@ -345,10 +352,8 @@ export default class HUDScene extends Phaser.Scene {
         this.addElementsToGameOverGrid();
 
         this.gameOverGrid.layout();
-        // uncomment to aid debugging and layout
+        // uncomment to aid debugging/layout
         // this.gameOverGrid.drawBounds(this.add.graphics());
-
-        console.log(this.gameOverGrid, this.gameOverText);
     }
 
     removeCountdownElements() {
@@ -368,37 +373,26 @@ export default class HUDScene extends Phaser.Scene {
         let screenWidth = this.sys.game.config.width;
         // setup grid sizer
         this.UIGrid = this.rexUI.add
-            .gridSizer({
-                column: 5,
-                row: 1,
-                width: screenWidth > 400 ? 400 : screenWidth,
+            .sizer({
+                orientation: "x",
+                x: 0,
+                y: 0,
+                width: screenWidth > 300 ? 300 : screenWidth,
                 height: 75,
             })
             .setOrigin(0);
-        // column proportions
-        this.UIGrid.setColumnProportion(0, 0.1);
-        this.UIGrid.setColumnProportion(1, 0.25);
-        this.UIGrid.setColumnProportion(2, 0.1);
-        this.UIGrid.setColumnProportion(3, 0.1);
-        this.UIGrid.setColumnProportion(4, 0.4);
     }
     setupGameOverGrid() {
         let screen = this.sys.game.config;
         // setup grid sizer
         this.gameOverGrid = this.rexUI.add
-            .gridSizer({
-                column: 1,
-                row: 3,
+            .sizer({
+                orientation: "y",
                 width: 300,
                 height: 400,
                 x: screen.width / 2 - 150,
                 y: screen.height / 2 - 200,
-                columnProportions: 1,
             })
             .setOrigin(0);
-        // row proportions
-        this.gameOverGrid.setRowProportion(0, 0.3);
-        this.gameOverGrid.setRowProportion(1, 0.2);
-        this.gameOverGrid.setRowProportion(2, 0.3);
     }
 }
